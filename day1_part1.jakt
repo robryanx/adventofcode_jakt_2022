@@ -1,0 +1,26 @@
+/// Expect:
+/// - output: "69883\n"
+
+import reader
+import utility
+
+function main() {
+    mut largest = 0
+
+    let input = reader::read_input(day: 1, examples: false)
+
+    mut current = 0
+    for calories in utility::split(input) {
+        let calories_int = calories.to_int()
+        if calories_int.has_value() {
+            current += calories_int! as! i64
+        } else {
+            if current > largest {
+                largest = current
+            }
+            current = 0
+        }
+    }
+
+    println("{}", largest)
+}

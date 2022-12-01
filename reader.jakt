@@ -1,0 +1,48 @@
+/// Expect: Skip
+
+import utility
+
+function lines_int(day: i64, examples: bool = false, separator: c_char = '\n') throws -> [i32] {
+    mut lines_int: [i32] = []
+    let lines_string = read_input(day, examples).split(separator)
+    
+    for line in lines_string.iterator() {
+        let number = line.to_int()
+
+        if number.has_value() {
+            lines_int.push(number!)
+        }
+    }
+
+    return lines_int;
+}
+
+function lines_string(day: i64, examples: bool = false) throws -> [String] {
+    return read_input(day, examples).split('\n')
+}
+
+function chars(day: i64, examples: bool = false) throws -> [u8] {
+    return utility::string_to_char_array(read_input(day, examples))
+}
+
+function read_input(day: i64, examples: bool) throws -> String {
+    let folder = match examples {
+        true => "examples"
+        else => "input"
+    }
+
+    let path = format("{}/{}", folder, day)
+    mut file = File::open_for_reading(path)
+    
+    return bytes_to_string(file.read_all())
+}
+
+function bytes_to_string(anon bytes: [u8]) throws -> String {
+    mut builder = StringBuilder::create()
+
+    for byte in bytes.iterator() {
+        builder.append(byte)
+    }
+
+    return builder.to_string()
+}

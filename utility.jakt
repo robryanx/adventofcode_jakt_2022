@@ -1,0 +1,159 @@
+/// Expect: Skip
+
+function string_to_char_array(anon str: String) throws -> [u8] {
+    mut chars: [u8] = []
+    for i in ..str.length() {
+        chars.push(str.byte_at(i))
+    }
+
+    return chars
+}
+
+function char_array_to_string(anon char_arr: [u8]) throws -> String {
+    mut sb = StringBuilder:: create()
+
+    for i in ..char_arr.size() {
+        sb.append(char_arr[i])
+    }
+
+    return sb.to_string()
+}
+
+function sort<T>(mut values: [T], sorter: &function(anon item_a: &T, anon item_b: &T) -> i8, low: i32 = 0, mut high: i32 = -1i32) {
+    if high == -1i32 {
+        high = values.size() as! i32 - 1
+    }
+
+    if low < high {
+        let pivot = values[high]
+        mut pi: i32 = low - 1
+
+        for j in low..high {
+            if sorter(values[j], pivot) <= 0 {
+                pi++
+
+                let tmp = values[j]
+                values[j] = values[pi]
+                values[pi] = tmp
+            }
+        }
+
+        pi++
+        if pi != high {
+            let tmp = values[high]
+            values[high] = values[pi]
+            values[pi] = tmp
+        }
+
+        sort(values, sorter, low, pi - 1)
+        sort(values, sorter, pi+1, high)
+    }
+}
+
+function array_remove(arr: [String], remove_str: String) throws -> [String] {
+    mut new_array: [String] = []
+
+    for str_ in arr.iterator() {
+        if str_ != remove_str {
+            new_array.push(str_)
+        }
+    }
+
+    return new_array
+}
+
+function array_join<T>(arr: [T]) throws -> String {
+    mut sb = StringBuilder::create()
+
+    for item in arr.iterator() {
+        sb.append_string(format("{}", item))
+    }
+    
+    return sb.to_string()
+}
+
+function abs(anon number: i64) -> i64 {
+    if number < 0 {
+        return number * -1
+    }
+
+    return number
+}
+
+function split(input: String, separator: c_char = '\n') throws -> [String] {
+    mut results: [String] = []
+
+    mut builder = StringBuilder::create()
+
+    for i in 0..input.length() {
+        if input.byte_at(i) == separator as! u8 {
+            results.push(builder.to_string())
+            builder.clear()
+        } else {
+            builder.append(input.byte_at(i))
+        }
+    }
+
+    return results
+}
+
+function is_number_part(anon c: u8) -> bool => (c >= b'0' and c <= b'9') or c == b'-'
+
+function format_match(mut line: String, mut format: String) throws -> [i32]? {
+    line = line.replace(replace: " ", with: "")
+    format = format.replace(replace: " ", with: "")
+
+    mut numbers: [i32] = []
+    mut current_number = StringBuilder::create()
+    mut line_pos = 0uz
+    for i in ..format.length() {
+        if format.byte_at(i) == b'%' {
+            while(is_number_part(line.byte_at(line_pos))) {
+                current_number.append(line.byte_at(line_pos))
+
+                line_pos++
+            }
+
+            let candidate = current_number.to_string()
+            if candidate.length() > 0 {
+                let to_int = candidate.to_int()
+                if to_int.has_value() {
+                    numbers.push(to_int!)
+                    current_number.clear()
+                } else {
+                    return None
+                }
+            } else {
+                return None
+            }
+        } else {
+            line_pos++
+        }
+    }
+
+    return numbers
+}
+
+struct Enumerator<T> {
+    index: usize
+    iterator: ArrayIterator<T>
+
+    function next(mut this) -> (usize, T)? {
+        .index++
+
+        let item: T? = .iterator.next()
+        if item.has_value() {
+            let ret: (usize, T) = (.index - 1, item!)
+            return Some(ret)
+        } else {
+            return None
+        }
+    }
+}
+
+function enumerate<T>(anon iterator: ArrayIterator<T>) -> Enumerator<T> {
+    return Enumerator(
+        index: 0
+        iterator
+    )
+}
