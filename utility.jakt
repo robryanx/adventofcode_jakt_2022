@@ -94,6 +94,7 @@ function split(input: String, separator: c_char = '\n') throws -> [String] {
         }
     }
 
+    results.push(builder.to_string())
     return results
 }
 

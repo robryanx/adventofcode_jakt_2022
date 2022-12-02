@@ -1,0 +1,85 @@
+/// Expect:
+/// - output: "10560\n"
+
+import reader
+
+enum Move {
+    Rock
+    Paper
+    Scissors
+
+    function score(this) => match this {
+        Rock => 1
+        Paper => 2
+        Scissors => 3
+    }
+
+    function build(move: String) => match move {
+        "A" | "X" => Move::Rock
+        "B" | "Y" => Move::Paper
+        else => Move::Scissors
+    }
+}
+
+enum GameState {
+    Lose
+    Draw
+    Win
+
+    function build(state: String) => match state {
+        "X" => GameState::Lose
+        "Y" => GameState::Draw
+        else => GameState::Win
+    }
+}
+
+function main() {
+    mut score = 0
+
+    for strategy in reader::lines_string(day: 2).iterator() {
+        let parts = strategy.split(' ')
+
+        let their_move = Move::build(move: parts[0])
+        let our_move = get_move_from_state(their_move, state: GameState::build(state: parts[1]))
+
+        score += game_result(our_move, their_move) + our_move.score()
+    }
+
+    println("{}", score)
+}
+
+function get_move_from_state(their_move: Move, state: GameState) -> Move => match their_move {
+    Rock => match state {
+        Lose => Move::Scissors
+        Draw => Move::Rock
+        Win => Move::Paper
+    }
+    Paper => match state {
+        Lose => Move::Rock
+        Draw => Move::Paper
+        Win => Move::Scissors
+    }
+    Scissors => match state {
+        Lose => Move::Paper
+        Draw => Move::Scissors
+        Win => Move::Rock
+    }
+}
+
+function game_result(our_move: Move, their_move: Move) -> i64 => match our_move {
+    Rock => match their_move {
+        Paper => 0
+        Rock => 3
+        else => 6
+    }
+    Paper => match their_move {
+        Scissors => 0
+        Paper => 3
+        else => 6
+    }
+    Scissors => match their_move {
+        Rock => 0
+        Scissors => 3
+        else => 6
+    }
+}

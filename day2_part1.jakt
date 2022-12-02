@@ -1,0 +1,57 @@
+/// Expect:
+/// - output: "9651\n"
+
+import reader
+
+enum Move {
+    Rock
+    Paper
+    Scissors
+
+    function score(this) => match this {
+        Rock => 1
+        Paper => 2
+        Scissors => 3
+    }
+
+    function build(move: String) => match move {
+        "A" | "X" => Move::Rock
+        "B" | "Y" => Move::Paper
+        else => Move::Scissors
+    }
+}
+
+function main() {
+    mut score = 0
+
+    for strategy in reader::lines_string(day: 2).iterator() {
+        let parts = strategy.split(' ')
+
+        let our_move = Move::build(move: parts[1])
+        let their_move = Move::build(move: parts[0])
+
+        score += game_result(our_move, their_move) + our_move.score()
+    }
+
+    println("{}", score)
+}
+
+function game_result(our_move: Move, their_move: Move) -> i64 {
+    return match our_move {
+        Rock => match their_move {
+            Paper => 0
+            Rock => 3
+            else => 6
+        }
+        Paper => match their_move {
+            Scissors => 0
+            Paper => 3
+            else => 6
+        }
+        Scissors => match their_move {
+            Rock => 0
+            Scissors => 3
+            else => 6
+        }
+    }
+}
