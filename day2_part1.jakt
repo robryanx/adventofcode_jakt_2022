@@ -24,7 +24,7 @@ enum Move {
 function main() {
     mut score = 0
 
-    for strategy in reader::lines_string(day: 2).iterator() {
+    for strategy in reader::lines_string(day: 2) {
         let parts = strategy.split(' ')
 
         let our_move = Move::build(move: parts[1])

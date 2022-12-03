@@ -65,7 +65,7 @@ function array_remove(arr: [String], remove_str: String) throws -> [String] {
 function array_join<T>(arr: [T]) throws -> String {
     mut sb = StringBuilder::create()
 
-    for item in arr.iterator() {
+    for item in arr {
         sb.append_string(format("{}", item))
     }
     

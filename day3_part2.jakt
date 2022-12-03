@@ -1,0 +1,65 @@
+/// Expect:
+/// - output: "2738\n"
+
+import reader
+import utility
+
+function main() {
+    mut total = 0
+
+    mut current_group: [String] = []
+    for contents in reader::lines_string(day: 3) {
+        current_group.push(contents)
+        if current_group.size() == 3 {
+            total += convert_priority(char_: check_group(group: current_group))
+            current_group = []
+        }
+    }
+
+    println("{}", total)
+}
+
+function check_group(group: [String]) throws -> u8 {
+    mut candidates = utility::string_to_char_array(group[0])
+    mut new_candidates: [u8] = []
+
+    for i in 1..group.size() {
+        for j in 0..group[i].length() {
+            for k in 0..candidates.size() {
+                if group[i].byte_at(j) == candidates[k] {
+                    new_candidates.push(candidates[k])
+                    break
+                }
+            }
+        }
+
+        candidates = new_candidates
+        new_candidates = []
+    }
+
+    if candidates.size() == 0 {
+        return 97
+    }
+    
+    return candidates[0]
+}
+
+function check_compartments(compartment_a: String, compartment_b: String) throws -> i64 {
+    for i in 0..compartment_a.length() {
+        for j in 0..compartment_b.length() {
+            if compartment_a.byte_at(i) == compartment_b.byte_at(j) {
+                return convert_priority(char_: compartment_a.byte_at(i))
+            }
+        }
+    }
+
+    return 0
+}
+
+function convert_priority(char_: u8) -> i64 {
+    if char_ >= 65 and char_ <= 90 {
+        return char_ - 38
+    }
+
+    return char_ - 96
+}

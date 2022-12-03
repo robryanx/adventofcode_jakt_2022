@@ -1,0 +1,38 @@
+/// Expect:
+/// - output: "8109\n"
+
+import reader
+import utility
+
+function main() {
+    mut total = 0
+
+    for contents in reader::lines_string(day: 3) {
+        let compartment_a = contents.substring(start: 0, length: contents.length()/2)
+        let compartment_b = contents.substring(start: contents.length()/2, length: contents.length()/2)
+
+        total += check_compartments(compartment_a, compartment_b)
+    }
+
+    println("{}", total)
+}
+
+function check_compartments(compartment_a: String, compartment_b: String) throws -> i64 {
+    for i in 0..compartment_a.length() {
+        for j in 0..compartment_b.length() {
+            if compartment_a.byte_at(i) == compartment_b.byte_at(j) {
+                return convert_priority(char_: compartment_a.byte_at(i))
+            }
+        }
+    }
+
+    return 0
+}
+
+function convert_priority(char_: u8) -> i64 {
+    if char_ >= 65 and char_ <= 90 {
+        return char_ - 38
+    }
+
+    return char_ - 96
+}

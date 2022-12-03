@@ -40,7 +40,7 @@ function read_input(day: i64, examples: bool) throws -> String {
 function bytes_to_string(anon bytes: [u8]) throws -> String {
     mut builder = StringBuilder::create()
 
-    for byte in bytes.iterator() {
+    for byte in bytes {
         builder.append(byte)
     }
 
