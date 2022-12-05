@@ -109,7 +109,7 @@ function format_match(mut line: String, mut format: String) throws -> [i32]? {
     mut line_pos = 0uz
     for i in ..format.length() {
         if format.byte_at(i) == b'%' {
-            while(is_number_part(line.byte_at(line_pos))) {
+            while(line_pos < format.length() and is_number_part(line.byte_at(line_pos))) {
                 current_number.append(line.byte_at(line_pos))
 
                 line_pos++
