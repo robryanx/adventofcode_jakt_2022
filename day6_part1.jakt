@@ -1,0 +1,30 @@
+/// Expect:
+/// - output: "1531\n"
+
+import reader
+import utility
+
+function main() {
+    let message_length = 4uz
+
+    let buffer = reader::chars(day: 6)
+
+    for i in 0..(buffer.size()-message_length) {
+        if is_unique(buffer[i..(i+message_length)]) {
+            println("{}", i+message_length)
+            break
+        }
+    }
+}
+
+function is_unique(anon chars: ArraySlice<u8>) -> bool {
+    for i in 0..chars.size() {
+        for j in 0..chars.size() {
+            if i != j and chars[i] == chars[j] {
+                return false
+            }
+        }
+    }
+
+    return true
+}
