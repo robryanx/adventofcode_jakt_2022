@@ -80,6 +80,27 @@ function abs(anon number: i64) -> i64 {
     return number
 }
 
+function into_set(anon x: &ArraySlice<u8>) throws -> {u8} {
+    mut set: {u8} = {}
+    for a in *x {
+        set.add(a)
+    }
+
+    return set
+}
+
+function intersect_sets<T>(anon a: Set<T>, anon b: Set<T>) throws -> {T} {
+    mut intersect: {u8} = {}
+
+    for x in a {
+        if b.contains(x) {
+            intersect.add(x)
+        }
+    }
+
+    return intersect
+}
+
 function split(input: String, separator: c_char = '\n') throws -> [String] {
     mut results: [String] = []
 
