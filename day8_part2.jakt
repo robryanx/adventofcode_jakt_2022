@@ -1,0 +1,71 @@
+/// Expect:
+/// - output: "537600\n"
+
+import reader
+
+function main() {
+    mut map: [[u8]] = []
+
+    for output_line in reader::lines_string(day: 8) {
+        mut row: [u8] = []
+
+        for i in 0..output_line.length() {
+            row.push(output_line.byte_at(i) - b'0')
+        }
+
+        map.push(row)
+    }
+
+    mut top_score = 0
+
+    for y in 1..(map.size()-1) {
+        for x in 1..(map.size()-1) {
+            let score = get_score(&map, y, x)
+            if score > top_score {
+                top_score = score
+            }
+        }
+    }
+
+    println("{}", top_score)
+}
+
+function get_score(map: &[[u8]], y: usize, x: usize) -> i64 {
+    // from left
+    mut left = 0
+    for check_x in (x as! i64 -1)..-1 {
+        left++
+        if map[y][check_x] >= map[y][x] {
+            break
+        }
+    }
+
+    // from right
+    mut right = 0
+    for check_x in (x+1)..map[0].size() {
+        right++
+        if map[y][check_x] >= map[y][x] {
+            break
+        }
+    }
+
+    // from top
+    mut top = 0
+    for check_y in (y as !i64 -1)..-1 {
+        top++
+        if map[check_y][x] >= map[y][x] {
+            break
+        }
+    }
+
+    // from bottom
+    mut bottom = 0
+    for check_y in (y+1)..map.size() {
+        bottom++
+        if map[check_y][x] >= map[y][x] {
+            break
+        }
+    }
+
+    return left * right * top * bottom
+}

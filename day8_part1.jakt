@@ -1,0 +1,87 @@
+/// Expect:
+/// - output: "1662\n"
+
+import reader
+
+function main() {
+    mut map: [[u8]] = []
+
+    for output_line in reader::lines_string(day: 8) {
+        mut row: [u8] = []
+
+        for i in 0..output_line.length() {
+            row.push(output_line.byte_at(i) - b'0')
+        }
+
+        map.push(row)
+    }
+
+    mut visible = (map.size() + map[0].size()) * 2 - 4
+
+    for y in 1..(map.size()-1) {
+        for x in 1..(map.size()-1) {
+            if point_visible(&map, y, x) {
+                visible++
+            }
+        }
+    }
+
+    println("{}", visible)
+}
+
+function point_visible(map: &[[u8]], y: usize, x: usize) -> bool {
+    // from left
+    mut found = true
+    for check_x in 0..x {
+        if map[y][check_x] >= map[y][x] {
+            found = false
+            break
+        }
+    }
+
+    if found {
+        return true
+    }
+
+    // from right
+    found = true
+    for check_x in (map[0].size()-1)..x {
+        if map[y][check_x] >= map[y][x] {
+            found = false
+            break
+        }
+    }
+
+    if found {
+        return true
+    }
+
+    // from top
+    found = true
+    for check_y in 0..y {
+        if map[check_y][x] >= map[y][x] {
+            found = false
+            break
+        }
+    }
+
+    if found {
+        return true
+    }
+
+    // from bottom
+    found = true
+    for check_y in (map.size()-1)..y {
+        if map[check_y][x] >= map[y][x] {
+            found = false
+            break
+        }
+    }
+
+    if found {
+        return true
+    }
+
+
+    return false
+}
