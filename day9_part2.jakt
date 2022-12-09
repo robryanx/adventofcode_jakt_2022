@@ -1,0 +1,86 @@
+/// Expect:
+/// - output: "2504\n"
+
+import reader
+import utility
+
+struct Position {
+    x: i64
+    y: i64
+
+    function to_string(this) throws -> String {
+        return format("{}-{}", .x, .y)
+    }
+}
+
+function main() {
+    let knot_count = 10
+
+    mut visited: [String:bool] = [:]
+
+    mut knots: [Position] = []
+    for i in 0..knot_count {
+        knots.push(Position(x: 0, y: 0))
+    }
+
+    visited[knots[9].to_string()] = true
+
+    for line in reader::lines_string(day: 9) {
+        let instuction_parts = line.split(' ')
+
+        for i in 0..instuction_parts[1].to_uint()! {
+            match instuction_parts[0] {
+                "R" => knots[0].x++ 
+                "L" => knots[0].x--
+                "U" => knots[0].y++
+                "D" => knots[0].y--
+                else => 0
+            }
+
+            for i in 0..(knot_count-1) {
+                update_next(head_position: &mut knots[i], tail_position: &mut knots[i+1])
+            }
+
+            visited[knots[9].to_string()] = true
+        }
+    }
+
+    println("{}", visited.size())
+}
+
+function update_next(head_position: &mut Position, tail_position: &mut Position) {
+    let x_distance = utility::abs(number: head_position.x - tail_position.x)
+    let y_distance = utility::abs(number: head_position.y - tail_position.y)
+
+    if y_distance > 1 {
+        if x_distance == 1 {
+            if head_position.x > tail_position.x {
+                tail_position.x++
+            } else {
+                tail_position.x--
+            }
+        }
+
+        if head_position.y > tail_position.y {
+            tail_position.y++
+        } else {
+            tail_position.y--
+        }
+    }
+
+    if x_distance > 1 {
+        if y_distance == 1 {
+            if head_position.y > tail_position.y {
+                tail_position.y++
+            } else {
+                tail_position.y--
+            }
+        }
+
+        if head_position.x > tail_position.x {
+            tail_position.x++
+        } else {
+            tail_position.x--
+        }
+    }
+}

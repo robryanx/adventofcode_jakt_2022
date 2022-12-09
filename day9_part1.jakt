@@ -1,0 +1,80 @@
+/// Expect:
+/// - output: "6314\n"
+
+import reader
+import utility
+
+struct Position {
+    x: i64
+    y: i64
+
+    function to_string(this) throws -> String {
+        return format("{}-{}", .x, .y)
+    }
+}
+
+function main() {
+    mut visited: [String:bool] = [:]
+
+    mut head_position = Position(x: 0, y: 0)
+    mut tail_position = Position(x: 0, y: 0)
+
+    visited[tail_position.to_string()] = true
+
+    for line in reader::lines_string(day: 9) {
+        let instuction_parts = line.split(' ')
+
+        for i in 0..instuction_parts[1].to_uint()! {
+            match instuction_parts[0] {
+                "R" => head_position.x++ 
+                "L" => head_position.x--
+                "U" => head_position.y++
+                "D" => head_position.y--
+                else => 0
+            }
+            
+            update_tail(&mut head_position, &mut tail_position)
+
+            visited[tail_position.to_string()] = true
+        }
+    }
+
+    println("{}", visited.size())
+}
+
+function update_tail(head_position: &mut Position, tail_position: &mut Position) {
+    let x_distance = utility::abs(number: head_position.x - tail_position.x)
+    let y_distance = utility::abs(number: head_position.y - tail_position.y)
+
+    if y_distance > 1 {
+        if x_distance == 1 {
+            if head_position.x > tail_position.x {
+                tail_position.x++
+            } else {
+                tail_position.x--
+            }
+        }
+
+        if head_position.y > tail_position.y {
+            tail_position.y++
+        } else {
+            tail_position.y--
+        }
+    }
+
+    if x_distance > 1 {
+        if y_distance == 1 {
+            if head_position.y > tail_position.y {
+                tail_position.y++
+            } else {
+                tail_position.y--
+            }
+        }
+
+        if head_position.x > tail_position.x {
+            tail_position.x++
+        } else {
+            tail_position.x--
+        }
+    }
+}
