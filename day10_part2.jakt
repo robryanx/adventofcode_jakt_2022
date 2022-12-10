@@ -1,0 +1,62 @@
+/// Expect:
+/// - output: "####.#..#..##..###..#..#..##..###..#..#.\n...#.#.#..#..#.#..#.#.#..#..#.#..#.#.#..\n..#..##...#....#..#.##...#....#..#.##...\n.#...#.#..#.##.###..#.#..#.##.###..#.#..\n#....#.#..#..#.#.#..#.#..#..#.#.#..#.#..\n####.#..#..###.#..#.#..#..###.#..#.#..#.\n"
+
+import reader
+
+function main() {
+    mut total = 0
+    mut x_register = 1i32
+    mut cycle = 0i32
+
+    mut image: [bool] = [false;240]
+
+    for instruction in reader::lines_string(day: 10) {
+        if instruction.starts_with(needle: "noop") {
+            draw(&mut image, cycle, x_register)
+            cycle++
+            
+        } else {
+            let instruction_parts = instruction.split(' ')
+            draw(&mut image, cycle, x_register)
+            cycle++
+            draw(&mut image, cycle, x_register)
+            cycle++
+            
+            x_register += instruction_parts[1].to_int()!
+        }
+    }
+
+    display_image(&mut image)
+}
+
+function draw(image: &mut [bool], cycle: i32, x_register: i32) {
+    mut start = x_register
+    if x_register > 0 {
+        start--
+    }
+
+    let end = x_register + 2
+
+    for x in start..end {
+        if cycle % 40 == x {
+            image[cycle] = true
+        }
+    }
+}
+
+function display_image(image: &mut [bool]) {
+    for x in 0..6 {
+        let start = x * 40
+        let end = start + 40
+
+        for val in image[start..end] {
+            if val {
+                print("#")
+            } else {
+                print(".")
+            }
+        }
+        
+        println("")
+    }
+}

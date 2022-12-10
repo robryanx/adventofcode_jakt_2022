@@ -1,0 +1,34 @@
+/// Expect:
+/// - output: "13820\n"
+
+import reader
+
+function main() {
+    mut total = 0
+    mut x_register = 1i32
+    mut cycle = 0
+
+    for instruction in reader::lines_string(day: 10) {
+        if instruction.starts_with(needle: "noop") {
+            cycle++
+            total += register_cycle(cycle, x_register)
+        } else {
+            let instruction_parts = instruction.split(' ')
+            cycle++
+            total += register_cycle(cycle, x_register)
+            cycle++
+            total += register_cycle(cycle, x_register)
+            x_register += instruction_parts[1].to_int()!
+        }
+    }
+
+    println("{}", total)
+}
+
+function register_cycle(cycle: i64, x_register: i32) -> i64 {
+    if cycle == 20 or (cycle > 20 and ((cycle - 20) % 40 == 0)) {
+        return cycle * x_register as! i64
+    }
+
+    return 0
+}
