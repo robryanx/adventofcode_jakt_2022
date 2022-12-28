@@ -1,0 +1,164 @@
+/// Expect:
+/// - output: "15305381442\n"
+
+import reader
+import utility
+
+enum Operation {
+    Times
+    Plus
+}
+
+struct Monkey {
+    number: usize
+    items: [usize]
+    inspections: usize
+    operation: Operation,
+    operation_number: usize?
+    divisor: usize
+    divisor_true: usize
+    divisor_false: usize
+}
+
+function main() {
+    let input = reader::read_input(day: 11, examples: false)
+
+    mut lowest_common_multiple = 1uz
+
+    mut current: [String] = []
+    mut monkeys: [Monkey] = []
+    for line in utility::split(input) {
+        if line.is_empty() {
+            let new_monkey = parse_monkey(lines: current)
+            lowest_common_multiple = check_lowest_common_multiple(lowest_common_multiple, new_monkey.divisor)
+
+            monkeys.push(new_monkey)
+            current = []
+        } else {
+            current.push(line)
+        }
+    }
+
+    let new_monkey = parse_monkey(lines: current)
+    monkeys.push(new_monkey)
+    lowest_common_multiple = check_lowest_common_multiple(lowest_common_multiple, new_monkey.divisor)
+
+    for rounds in 0..10000 {
+        mut count = 0
+        for monkey in monkeys {
+            for item in monkey.items {
+                let operation_number = match monkey.operation_number.has_value() {
+                    true => monkey.operation_number!
+                    else => item
+                }
+
+                let new_item = match monkey.operation {
+                    Times => (item * operation_number)
+                    Plus => (item + operation_number)
+                }
+
+                let new_monkey = match new_item % monkey.divisor {
+                    0 => monkey.divisor_true
+                    else => monkey.divisor_false
+                }
+
+                monkeys[new_monkey].items.push((new_item % lowest_common_multiple))
+                monkeys[count].inspections++
+            }
+
+            monkeys[count].items = []
+            count++
+        }
+    }
+
+    mut inspections: [usize] = [0, 0]
+
+    for monkey in monkeys {
+        if monkey.inspections > inspections[0] {
+            inspections[1] = inspections[0]
+            inspections[0] = monkey.inspections
+        } else if monkey.inspections > inspections[1] {
+            inspections[1] = monkey.inspections
+        }
+    }
+
+    println("{}", inspections[0] * inspections[1])
+}
+
+function check_lowest_common_multiple(anon a: usize, anon b: usize) -> usize {
+    mut check_a = a
+    mut check_b = b
+
+    while true {
+        if check_a < check_b {
+            check_a += a
+        } else if check_a > check_b {
+            check_b += b
+        } else {
+            break
+        }
+    }
+
+    return check_a
+}
+
+function parse_monkey(lines: [String]) throws -> Monkey {
+    mut number = 0uz
+    mut items: [usize] = []
+    mut operation: Operation = Operation::Plus
+    mut operation_number: usize? = None
+    mut divisor = 0uz
+    mut divisor_true = 0uz
+    mut divisor_false = 0uz
+
+    mut i = 0
+    for line in lines.iterator() {
+        match i {
+            0 => {
+                number = utility::format_match(line, format: "Monkey %:")![0] as! usize
+            }
+            1 => {
+                let line_ = line.replace(replace: "  Starting items: ", with: "")
+                let parts = line_.split(',')
+                for item in parts {
+                    items.push(item.to_uint()! as! usize)
+                }
+            }
+            2 => {
+                let sign = line.substring(start: 23, length: 1)
+
+                operation = match sign {
+                    "*" => Operation::Times
+                    else => Operation::Plus
+                }
+
+                let operation_number_check = utility::format_match(line, format: format("Operation: new = old {} %", sign))
+                if operation_number_check.has_value() {
+                    operation_number = operation_number_check![0] as! usize
+                }
+            }
+            3 => {
+                divisor = utility::format_match(line, format: "  Test: divisible by %")![0] as! usize
+            }
+            4 => {
+                divisor_true = utility::format_match(line, format: "    If true: throw to monkey %")![0] as! usize
+            }
+            else => {
+                divisor_false = utility::format_match(line, format: "    If false: throw to monkey %")![0] as! usize
+            }
+        }
+
+        i++
+    }
+
+    return Monkey(
+        number
+        items
+        inspections: 0
+        operation
+        operation_number
+        divisor
+        divisor_true
+        divisor_false
+    )
+}
