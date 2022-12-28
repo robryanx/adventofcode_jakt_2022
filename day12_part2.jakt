@@ -1,0 +1,113 @@
+/// Expect:
+/// - output: "451\n"
+
+import reader
+import utility
+
+struct Position {
+    height: usize
+    distance: usize?
+}
+
+struct Path {
+    y: usize
+    x: usize
+}
+
+function main() {
+    mut map: [[Position]] = []
+    mut starting_postions: [Path] = []
+
+    mut end_x = 0uz
+    mut end_y = 0uz
+
+    mut start_x = 0uz
+    mut start_y = 0uz
+
+    mut y = 0uz
+    for output_line in reader::lines_string(day: 12, examples: false) {
+        mut row: [Position] = []
+
+        for x in 0..output_line.length() {
+            mut height = 0uz
+            if output_line.byte_at(x) == b'E' {
+                height = 25
+
+                end_x = x
+                end_y = y
+            } else if output_line.byte_at(x) == b'S' {
+                start_x = x
+                start_y = y
+            } else {
+                height = (output_line.byte_at(x) - b'a') as! usize
+            }
+
+            if output_line.byte_at(x) == b'a' {
+                starting_postions.push(Path(
+                    y
+                    x
+                ))
+            }
+
+            row.push(Position(
+                height
+                distance: None
+            ))
+        }
+
+        map.push(row)
+        y++
+    }
+
+    visit(map: &mut map, y: end_y, x: end_x)
+
+    mut shortest = 9999999uz
+    for position in starting_postions {
+        if map[position.y][position.x].distance.has_value() and map[position.y][position.x].distance! < shortest {
+            shortest = map[position.y][position.x].distance!
+        }
+    }
+
+    println("{}", shortest)
+}
+
+function should_visit(position: Position, current_height: usize, new_distance: usize) -> bool {
+    if (current_height as! i64 - position.height as! i64) < 2 {
+        if (not position.distance.has_value() or new_distance < position.distance!) {
+            return true
+        }
+    }
+
+    return false
+}
+
+function visit(map: &mut [[Position]], y: usize, x: usize) {
+    if not map[y][x].distance.has_value() {
+        map[y][x].distance = 0
+    }
+
+    let new_distance = map[y][x].distance! + 1
+
+    let max_y = map.size()
+    let max_x = map[0].size()
+
+    if y + 1 < max_y and should_visit(position: map[y+1][x], current_height: map[y][x].height, new_distance) {
+        map[y+1][x].distance = new_distance
+        visit(map, y: y+1, x)
+    }
+
+    if y > 0 and should_visit(position: map[y-1][x], current_height: map[y][x].height, new_distance) {
+        map[y-1][x].distance = new_distance
+        visit(map, y: y-1, x)
+    }
+
+    if x + 1 < max_x and should_visit(position: map[y][x+1], current_height: map[y][x].height, new_distance) {
+        map[y][x+1].distance = new_distance
+        visit(map, y, x: x+1)
+    }
+
+    if x > 0 and should_visit(position: map[y][x-1], current_height: map[y][x].height, new_distance) {
+        map[y][x-1].distance = new_distance
+        visit(map, y, x: x-1)
+    }
+}
