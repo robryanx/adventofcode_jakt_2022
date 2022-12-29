@@ -1,0 +1,163 @@
+/// Expect:
+/// - output: "21890\n"
+
+import reader
+import utility
+
+struct PacketOrValue {
+    packet: [PacketOrValue]
+    value: i32?
+    splitter: bool
+    base: String
+}
+
+function main() {
+    mut input = reader::read_input(day: 13, examples: false)
+
+    mut packets: [PacketOrValue] = []
+    for line in utility::split(input) {
+        if not line.is_empty() {
+            mut (remaining_a, new_packet) = parse_packet(packet: line)
+
+            packets.push(new_packet)
+        }
+    }
+
+    mut (remaining_a, splitter_a) = parse_packet(packet: "[[2]]", splitter: true)
+    packets.push(splitter_a)
+
+    mut (remaining_b, splitter_b) = parse_packet(packet: "[[6]]", splitter: true)
+    packets.push(splitter_b)
+
+    for i in 0..packets.size() {
+        for j in 0..packets.size() {
+            if i != j {
+                let order = check_order(packets[i], packets[j])
+
+                if order == 1 {
+                    let tmp = packets[i]
+                    packets[i] = packets[j]
+                    packets[j] = tmp
+                } else if order == 2 {
+                    let tmp = packets[j]
+                    packets[j] = packets[i]
+                    packets[i] = tmp
+                }
+            }
+        }
+    }
+
+    mut splitters: [usize] = []
+    mut count = 1uz
+    for packet in packets {
+        if packet.splitter {
+            splitters.push(count)
+        }
+
+        count++
+    }
+
+    println("{}", splitters[0] * splitters[1])
+}
+
+function check_order(anon mut packet_a: PacketOrValue, anon mut packet_b: PacketOrValue) throws -> u8 {
+    if packet_a.value.has_value() and packet_b.value.has_value() {
+        if packet_a.value! < packet_b.value! {
+            return 1
+        } else if packet_a.value! == packet_b.value! {
+            return 2
+        } else {
+            return 3
+        }
+    } else if not packet_a.value.has_value() and packet_b.value.has_value() {
+        packet_b = PacketOrValue(
+            packet: [PacketOrValue(
+                packet: []
+                value: packet_b.value!
+                splitter: false
+                base: ""
+            )]
+            value: None
+            splitter: packet_b.splitter
+            base: packet_b.base
+        )
+    } else if not packet_b.value.has_value() and packet_a.value.has_value() {
+        packet_a = PacketOrValue(
+            packet: [PacketOrValue(
+                packet: []
+                value: packet_a.value!
+                splitter: false
+                base: ""
+            )]
+            value: None
+            splitter: packet_a.splitter
+            base: packet_a.base
+        )
+    }
+
+    mut length_a = packet_a.packet.size()
+    mut length_b = packet_b.packet.size()
+
+    mut max = length_a
+    if length_b > max {
+        max = length_b
+    }
+
+    for i in 0..max {
+        if i < length_a and i < length_b {
+            let order = check_order(packet_a.packet[i], packet_b.packet[i])
+            if order != 2 {
+                return order
+            }
+        } else if i < length_a {
+            return 3 // not in order
+        } else {
+            return 1 // in order
+        }
+    }
+
+    return 2
+}
+
+function parse_packet(mut packet: String, splitter: bool = false) throws -> (String, PacketOrValue) {
+    mut values = PacketOrValue(
+        packet: []
+        value: None
+        splitter
+        base: packet
+    )
+
+    mut current_value = StringBuilder::create()
+    mut i = 0uz
+    while i < packet.length() {
+        if packet.byte_at(i) == b'[' {
+            let (new_packet, value) = parse_packet(packet: packet.substring(start: i+1, length: packet.length()-i-1))
+            values.packet.push(value)
+            packet = new_packet
+            i = 0
+        } else if packet.byte_at(i) == b']' or packet.byte_at(i) == b',' {
+            if current_value.length() > 0 {
+                values.packet.push(PacketOrValue(
+                    packet: []
+                    value: current_value.to_string().to_int()!
+                    splitter
+                    base: ""
+                ))
+
+                current_value.clear()
+            }
+
+            if packet.byte_at(i) == b']' {
+                packet = packet.substring(start: i+1, length: packet.length()-i-1)
+                break
+            }
+
+            i++
+        } else if packet.byte_at(i) >= b'0' and packet.byte_at(i) <= b'9' {
+            current_value.append(packet.byte_at(i))
+            i++
+        }
+    }
+
+    return (packet, values)
+}
