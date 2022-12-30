@@ -1,0 +1,151 @@
+/// Expect:
+/// - output: "1330\n"
+
+import reader
+import utility
+
+struct Position {
+    x: u32
+    y: u32
+}
+
+function main() {
+    mut lines: [[Position]] = []
+    for line in reader::lines_string(day: 14, examples: false) {
+        mut line_sections: [Position] = []
+        for coordinate in utility::split_on_string(input: line, separator: " -> ") {
+            let coordinate_parts = coordinate.split(',')
+
+            line_sections.push(Position(
+                x: coordinate_parts[0].to_uint()!
+                y: coordinate_parts[1].to_uint()!
+            ))            
+        }
+
+        lines.push(line_sections)
+    }
+
+    // determine min/max x/y
+    mut max_x = 500u32
+    mut min_x = 500u32
+    mut max_y = 0u32
+
+    for line in lines {
+        for line_part in line {
+            if line_part.x < min_x {
+                min_x = line_part.x
+            }
+
+            if line_part.x > max_x {
+                max_x = line_part.x
+            }
+
+            if line_part.y > max_y {
+                max_y = line_part.y
+            }
+        }
+    }
+
+    min_x--
+    max_x+=2
+    max_y+=2
+
+    mut board: [[bool]] = []
+    for y in 0..max_y {
+        mut row: [bool] = []
+        for x in min_x..max_x {
+            row.push(false)
+        }
+
+        board.push(row)
+    }
+
+    for line in lines {
+        for i in 0..(line.size() - 1) {
+            if line[i].x == line[i+1].x {
+                for j in (line[i].y..line[i+1].y).inclusive() {
+                    board[j][line[i].x-min_x] = true
+                }
+            } else {
+                for j in (line[i].x..line[i+1].x).inclusive() {
+                    board[line[i].y][j-min_x] = true
+                }
+            }
+        }
+    }
+
+    mut count = 0
+    while true {
+        let has_spot = drop_sand(&mut board, min_x)
+
+        if not has_spot {
+            break
+        }
+
+        count++
+    }
+
+    //draw_board(&board)
+    println("{}", count)
+}
+
+function drop_sand(board: &mut [[bool]], min_x: u32) -> bool {
+    mut current_x = 500u32 - min_x
+    mut current_y = 0u32
+
+    mut has_spot = true
+    while true {
+        if current_y == (board.size() - 1) as! u32 {
+            has_spot = false
+            break
+        }
+
+        if not board[current_y+1][current_x] {
+            current_y++
+            continue
+        }
+
+        if current_x == 0 {
+            has_spot = false
+            break
+        }
+
+        if not board[current_y+1][current_x-1] {
+            current_y++
+            current_x--
+            continue
+        }
+
+        if current_x == (board[0].size() - 1) as! u32 {
+            has_spot = false
+            break
+        }
+
+        if not board[current_y+1][current_x+1] {
+            current_y++
+            current_x++
+        } else {
+            break
+        }
+    }
+
+    if has_spot {
+        board[current_y][current_x] = true
+    }
+
+    return has_spot
+}
+
+function draw_board(board: &[[bool]]) {
+    for y in 0..board.size() {
+        for x in 0..board[0].size() {
+            if board[y][x] {
+                print("#")
+            } else {
+                print(".")
+            }
+        }
+
+        print("\n")
+    }
+}

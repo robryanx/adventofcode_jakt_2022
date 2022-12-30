@@ -119,6 +119,38 @@ function split(input: String, separator: c_char = '\n') throws -> [String] {
     return results
 }
 
+function split_on_string(input: String, separator: String) throws -> [String] {
+    mut results: [String] = []
+
+    mut builder = StringBuilder::create()
+
+    mut i = 0uz
+    while i < input.length() {
+        mut is_separator = false
+        if i + separator.length() < input.length() {
+            is_separator = true
+            for j in 0..separator.length() {
+                if input.byte_at(i+j) != separator.byte_at(j) {
+                    is_separator = false
+                    break
+                }
+            }
+        }
+
+        if is_separator {
+            results.push(builder.to_string())
+            builder.clear()
+            i += separator.length()
+        } else {
+            builder.append(input.byte_at(i))
+            i++
+        }
+    }
+
+    results.push(builder.to_string())
+    return results
+}
+
 function is_number_part(anon c: u8) -> bool => (c >= b'0' and c <= b'9') or c == b'-'
 
 function format_match(mut line: String, mut format: String) throws -> [i32]? {
