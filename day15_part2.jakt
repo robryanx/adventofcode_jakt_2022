@@ -1,0 +1,171 @@
+/// Expect:
+/// - output: "13267474686239\n"
+
+import reader
+import utility
+
+struct Ranged {
+    start: i32
+    end: i32
+}
+
+struct Position {
+    x: i32
+    y: i32
+}
+
+struct SensorBeacon {
+    sensor: Position
+    beacon: Position
+    distance: i32
+}
+
+function main() {
+    mut board_min = 0i32
+    mut board_max = 4000000i32
+
+    mut sensors: [SensorBeacon] = []
+    for line in reader::lines_string(day: 15, examples: false) {
+        let locations = utility::format_match(line, format: "Sensor at x=%, y=%: closest beacon is at x=%, y=%")
+
+        let sensor_position = Position(
+            x: locations![0]
+            y: locations![1]
+        )
+
+        let beacon_position = Position(
+            x: locations![2]
+            y: locations![3]
+        )
+
+        sensors.push(SensorBeacon(
+            sensor: sensor_position
+            beacon: beacon_position
+            distance: manhattan(position_a: sensor_position, position_b: beacon_position)
+        ))
+    }
+
+    for y in board_min..board_max {
+        mut ranges: [Ranged] = []
+        ranges.ensure_capacity(sensors.size())
+
+        for sensor in sensors {
+            let y_distance = utility::abs32(sensor.sensor.y - y)
+
+            if sensor.distance > y_distance {
+                mut beacon_min_x = sensor.sensor.x - (sensor.distance - utility::abs32(sensor.sensor.y - y))
+                mut beacon_max_x = sensor.sensor.x + (sensor.distance - utility::abs32(sensor.sensor.y - y))
+
+                if beacon_min_x < board_min {
+                    beacon_min_x = board_min
+                }
+                if beacon_max_x > board_max {
+                    beacon_max_x = board_max
+                }
+
+                ranges.push(Ranged(
+                    start: beacon_min_x
+                    end: beacon_max_x
+                ))
+            }
+        }
+
+        let gaps = range_gaps_optimised(&ranges, board_min, board_max)
+        if gaps.size() > 0 {
+            println("{}", gaps[0].start as! i64 * 4000000 + y as! i64)
+
+            break
+        }
+    }
+}
+
+function range_gaps_optimised(ranges: &[Ranged], board_min: i32, board_max: i32) throws -> [Ranged] {
+    let size = ranges.size()
+
+    for i in 0..size {
+        for j in 0..size {
+            if i != j and ranges[i].end + 2 == ranges[j].start {
+                return range_gaps(ranges, board_min, board_max)
+            }
+        }
+    }
+
+    return []
+}
+
+function range_gaps(ranges: &[Ranged], board_min: i32, board_max: i32) throws -> [Ranged] {
+    utility::sort(values: *ranges, sorter: &function(anon item_a: &Ranged, anon item_b: &Ranged) -> i8 {
+        if item_a.start == item_b.start {
+            if item_a.end > item_b.end {
+                return 1
+            } else if item_a.end < item_b.end {
+                return -1
+            }
+        }
+
+        if item_a.start > item_b.start {
+            return 1
+        } else if item_a.start < item_b.start {
+            return -1
+        }
+
+        return 0
+    })
+
+    mut largest_end = 0i32
+    mut gaps: [Ranged] = []
+    gaps.ensure_capacity(ranges.size())
+
+    if ranges.size() == 0 {
+        gaps.push(Ranged(
+            start: board_min
+            end: board_max
+        ))
+    } else {
+        if ranges[0].start > board_min {
+            gaps.push(Ranged(
+                start: board_min
+                end: ranges[0].start - 1
+            ))
+        }        
+
+        mut i = 0uz
+        while i < ranges.size() {
+            mut end = ranges[i].end
+            mut next = 1uz
+            for j in (i+1)..ranges.size() {
+                if ranges[i].end < ranges[j].end {
+                    break
+                }
+
+                next++
+            }
+
+            if end > largest_end {
+                largest_end = end
+            }
+
+            i+=next
+
+            if i < ranges.size() and end < ranges[i].start {
+                gaps.push(Ranged(
+                    start: end + 1
+                    end: ranges[i].start - 1
+                ))
+            }
+        }
+    }
+
+    if largest_end < board_max {
+        gaps.push(Ranged(
+            start: largest_end + 1
+            end: board_max
+        ))
+    }
+    
+    return gaps
+}
+
+function manhattan(position_a: Position, position_b: Position) -> i32 {
+    return utility::abs32(position_a.x - position_b.x) + utility::abs32(position_a.y - position_b.y)
+}

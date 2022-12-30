@@ -29,7 +29,7 @@ function sort<T>(mut values: [T], sorter: &function(anon item_a: &T, anon item_b
         mut pi: i32 = low - 1
 
         for j in low..high {
-            if sorter(values[j], pivot) <= 0 {
+            if sorter(&values[j], &pivot) <= 0 {
                 pi++
 
                 let tmp = values[j]
@@ -75,6 +75,14 @@ function array_join<T>(arr: [T]) throws -> String {
 function abs(anon number: i64) -> i64 {
     if number < 0 {
         return number * -1
+    }
+
+    return number
+}
+
+function abs32(anon number: i32) -> i32 {
+    if number < 0 {
+        return number * -1i32
     }
 
     return number
