@@ -159,6 +159,45 @@ function split_on_string(input: String, separator: String) throws -> [String] {
     return results
 }
 
+function trim(anon input: String) -> String {
+    mut start = 0uz
+    for i in 0..input.length() {
+        if input.byte_at(i) != b' ' {
+            break
+        }
+
+        start++
+    }
+
+    mut end = input.length()
+    for i in (input.length()-1)..0 {
+        if input.byte_at(i) != b' ' {
+            break
+        }
+
+        end--
+        if end == 0 {
+            break
+        }
+    }
+
+    if end <= start {
+        return ""
+    }
+
+    return input.substring(start, length: end-start)
+}
+
+function list(anon input: String) throws -> [String] {
+    mut parts = input.split(',')
+
+    for i in 0..parts.size() {
+        parts[i] = trim(parts[i])
+    }
+
+    return parts
+}
+
 function is_number_part(anon c: u8) -> bool => (c >= b'0' and c <= b'9') or c == b'-'
 
 function format_match(mut line: String, mut format: String) throws -> [i32]? {

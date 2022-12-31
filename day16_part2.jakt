@@ -1,0 +1,260 @@
+/// Expect:
+/// - output: "2591\n"
+
+import reader
+import utility
+
+struct Valve {
+    rate: usize
+    valves: [String]
+}
+
+struct ValveConnection {
+    name: String
+    distance: usize
+    rate: usize
+}
+
+struct ValveValue {
+    name: String
+    distance: usize
+    value: usize
+}
+
+struct Visited {
+    elephant: bool
+    minute: usize
+    value: usize
+}
+
+function main() {
+    mut valves: [String:Valve] = [:]
+
+    // Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
+    for line in reader::lines_string(day: 16, examples: false) {
+        let separator = match line.contains(" tunnels lead to valves ") {
+            true => " tunnels lead to valves "
+            else => " tunnel leads to valve "
+        }
+
+        let parts = utility::split_on_string(input: line, separator)
+        let all_parts = line.split(' ')
+
+        valves[all_parts[1]] = Valve(
+            rate: format_match(line: all_parts[4], format: "rate=%;")![0] as! usize
+            valves: utility::list(parts[1])
+        )
+    }
+
+    mut all_valve_connections: [String:[ValveConnection]] = [:]
+    for (key, val) in valves {
+        if val.rate > 0 or key == "AA" {
+            all_valve_connections[key] = get_valve_connections(&valves, from: key)
+        }
+    }
+
+    mut visited: [String:Visited] = [:]
+    let total = recurse_values(
+        &all_valve_connections
+        current: "AA"
+        current_elephant: "AA"
+        remaining: 26
+        remaining_elephant: 26
+        total: 0
+        value: 0
+        value_elephant: 0
+        visited
+    )
+
+    println("{}", total)
+}
+
+function recurse_values(
+    all_valve_connections: &[String:[ValveConnection]]
+    current: String
+    current_elephant: String
+    remaining: usize
+    remaining_elephant: usize
+    mut total: usize
+    value: usize
+    value_elephant: usize
+    visited: [String:Visited]
+) throws -> usize {
+    mut new_visited: [String:Visited] = [:]
+    new_visited.ensure_capacity(visited.size()+2)
+    for (key, val) in visited {
+        new_visited[key] = val
+    }
+
+    mut valve_values: [ValveValue] = []
+    mut valve_values_elephant: [ValveValue] = []
+
+    if current != "" {
+        new_visited[current] = Visited(
+            elephant: false
+            minute: 26 - remaining
+            value
+        )
+    }
+
+    if current_elephant != "" {
+        new_visited[current_elephant] = Visited(
+            elephant: true
+            minute: 26 - remaining_elephant
+            value: value_elephant
+        )
+    }
+
+    if current != "" {
+        total += value
+
+        let valve_connections = all_valve_connections[current]
+
+        // apply values to valves
+        valve_values.ensure_capacity(valve_connections.size())
+        for i in 0..valve_connections.size() {
+            if (valve_connections[i].distance + 1 < remaining) and not new_visited.contains(valve_connections[i].name) {
+                valve_values.push(ValveValue(
+                    name: valve_connections[i].name
+                    distance: valve_connections[i].distance
+                    value: (remaining - valve_connections[i].distance) * valve_connections[i].rate
+                ))
+            }
+        }
+
+        if valve_values.size() > 1 {
+            utility::sort(values: valve_values, sorter: &function(anon item_a: &ValveValue, anon item_b: &ValveValue) -> i8 {
+                if item_a.value > item_b.value {
+                    return -1
+                } else if item_a.value < item_b.value {
+                    return 1
+                }
+
+                return 0
+            })
+        }  
+    }
+
+    valve_values.push(ValveValue(
+        name: ""
+        distance: 0
+        value: 0
+    ))
+
+    if current_elephant != "" {
+        total += value_elephant
+
+        let valve_connections = all_valve_connections[current_elephant]
+        
+        // apply values to valves
+        valve_values_elephant.ensure_capacity(valve_connections.size())
+        for i in 0..valve_connections.size() {
+            if (valve_connections[i].distance + 1 < remaining_elephant) and not new_visited.contains(valve_connections[i].name) {
+                valve_values_elephant.push(ValveValue(
+                    name: valve_connections[i].name
+                    distance: valve_connections[i].distance
+                    value: (remaining_elephant - valve_connections[i].distance) * valve_connections[i].rate
+                ))
+            }
+        }
+
+        if valve_values_elephant.size() > 1 {
+            utility::sort(values: valve_values_elephant, sorter: &function(anon item_a: &ValveValue, anon item_b: &ValveValue) -> i8 {
+                if item_a.value > item_b.value {
+                    return -1
+                } else if item_a.value < item_b.value {
+                    return 1
+                }
+
+                return 0
+            })
+        }  
+    }
+
+    valve_values_elephant.push(ValveValue(
+        name: ""
+        distance: 0
+        value: 0
+    ))
+
+    if valve_values.size() > 1 or valve_values_elephant.size() > 1 {
+        mut largest = 0uz
+        
+        for valve_value in valve_values[0..12] {
+            for valve_value_elephant in valve_values_elephant[0..12] {
+                if valve_value.name != valve_value_elephant.name {
+                    let check_largest = recurse_values(
+                        all_valve_connections
+                        current: valve_value.name
+                        current_elephant: valve_value_elephant.name
+                        remaining: remaining - valve_value.distance
+                        remaining_elephant: remaining_elephant - valve_value_elephant.distance
+                        total
+                        value: valve_value.value
+                        value_elephant: valve_value_elephant.value
+                        visited: new_visited
+                    )
+                    if check_largest > largest {
+                        largest = check_largest
+                    }
+                }
+            }
+        }
+
+        if largest > 0 {
+            total = largest
+        }
+    }
+
+    return total    
+}
+
+function get_valve_connections(valves: &[String:Valve], from: String) throws -> [ValveConnection] {
+    // find the best path from the current valve to each valve with a flow rate>0
+    mut valve_connections: [ValveConnection] = []
+    valve_connections.ensure_capacity(valves.size())
+
+    for (key, val) in *valves {
+        if val.rate > 0 and key != from {
+            mut visited: [String] = []
+            let path_value = find_path(valves, from, to: key, visited, length: 0)
+            valve_connections.push(ValveConnection(
+                name: key
+                distance: (path_value.0 + 1)
+                rate: val.rate
+            ))
+        }
+    }
+
+    return valve_connections
+}
+
+function find_path(valves: &[String:Valve], from: String, to: String, visited: [String], length: usize) throws -> (usize, [String]) {
+    if from == to {
+        return (length, visited)
+    }
+
+    mut new_visited: [String] = visited[..].to_array()
+    new_visited.push(from)
+
+    mut to_visit = false
+    mut shortest = 10000uz
+    mut shortest_visited: [String] = []
+    for valve in valves[from].valves {
+        if not new_visited.contains(valve) {
+            to_visit = true
+
+            let (check_length, check_visited) = find_path(valves, from: valve, to, visited: new_visited, length: length+1)
+            if check_length != 0 and check_length < shortest {
+                shortest = check_length
+                shortest_visited = check_visited
+            }
+        }
+    }
+
+    if not to_visit or shortest == 10000 {
+        return (0uz, visited)
+    } else {
+        return (shortest, shortest_visited)
+    }
+}
