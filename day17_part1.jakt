@@ -1,0 +1,159 @@
+/// Expect:
+/// - output: "3224\n"
+
+import reader
+import utility
+
+struct Part {
+    x: usize
+    y: usize
+}
+
+function main() {
+    let jets = reader::read_input(day: 17, examples: false)
+
+    mut row: [bool] = [false, false, false, false, false, false, false]
+    mut board: [[bool]] = []
+
+    mut shapes: [[Part]] = [
+        [
+            Part(x: 2, y: 0)
+            Part(x: 3, y: 0)
+            Part(x: 4, y: 0)
+            Part(x: 5, y: 0)
+        ]
+        [
+            Part(x: 3, y: 0)
+            Part(x: 2, y: 1)
+            Part(x: 3, y: 1)
+            Part(x: 4, y: 1)
+            Part(x: 3, y: 2)
+        ]
+        [
+            Part(x: 4, y: 0)
+            Part(x: 4, y: 1)
+            Part(x: 2, y: 2)
+            Part(x: 3, y: 2)
+            Part(x: 4, y: 2)
+        ]
+        [
+            Part(x: 2, y: 0)
+            Part(x: 2, y: 1)
+            Part(x: 2, y: 2)
+            Part(x: 2, y: 3)
+        ]
+        [
+            Part(x: 2, y: 0)
+            Part(x: 3, y: 0)
+            Part(x: 2, y: 1)
+            Part(x: 3, y: 1)
+        ]
+    ]
+
+    mut shape_heights: [u8] = [
+        1
+        3
+        3
+        4
+        2
+    ]
+
+    mut height = 0uz
+    mut board_height = 0uz
+    mut jet_pos = 0uz
+    for i in 0..2022 {
+        // add rows to the board
+        let shape_height = shape_heights[i%5]
+
+        let add_height = 4 + shape_height as! i64 - (board_height as! i64 - height as! i64)
+        if add_height > 0 {
+            for x in 0..add_height {
+                board.push(row[..].to_array())
+            }
+        }
+
+        board_height = board.size() - 1
+
+        mut shape_position: [Part] = shapes[i%5][..].to_array()
+        for z in 0..shape_position.size() {
+            shape_position[z].y = (height + 2 + shape_height as! usize) - shape_position[z].y
+        }
+
+        let prev_height = height
+
+        mut can_move_down = true
+        while can_move_down {
+            if jets.byte_at(jet_pos % jets.length()) == b'<' {
+                mut can_move = true
+                for z in 0..shape_position.size() {
+                    if shape_position[z].x == 0 or board[shape_position[z].y][shape_position[z].x-1] {
+                        can_move = false
+                        break
+                    }
+                }
+
+                if can_move {
+                    for z in 0..shape_position.size() {
+                        shape_position[z].x--
+                    }
+                }
+            } else {
+                mut can_move = true
+                for z in 0..shape_position.size() {
+                    if shape_position[z].x == 6 or board[shape_position[z].y][shape_position[z].x+1]  {
+                        can_move = false
+                        break
+                    }
+                }
+
+                if can_move {
+                    for z in 0..shape_position.size() {
+                        shape_position[z].x++
+                    }
+                }
+            }
+
+            for z in 0..shape_position.size() {
+                if shape_position[z].y == 0 or board[shape_position[z].y-1][shape_position[z].x] {
+                    can_move_down = false
+                }
+            }
+
+            if can_move_down {
+                for z in 0..shape_position.size() {
+                    shape_position[z].y--
+                }
+            } else {
+                mut largest_y = 0uz
+                for z in 0..shape_position.size() {
+                    board[shape_position[z].y][shape_position[z].x] = true
+                    if shape_position[z].y + 1 > largest_y {
+                        largest_y = shape_position[z].y + 1
+                    }
+                }
+
+                if largest_y > height {
+                    height = largest_y
+                }
+            }
+
+            jet_pos++
+        }
+    }
+
+    println("{}", height)
+}
+
+function print_board(board: [[bool]]) {
+    for y in 0..board.size() {
+        for x in 0..board[0].size() {
+            if board[y][x] {
+                print("#")
+            } else {
+                print(".")
+            }
+        }
+
+        println("")
+    }
+}
