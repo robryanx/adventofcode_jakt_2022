@@ -1,0 +1,304 @@
+/// Expect:
+/// - output: "2058\n"
+
+import reader
+import utility
+
+struct Location {
+    x: i32
+    y: i32
+    z: i32
+
+    function to_string(this) throws => format("{}-{}-{}", .x, .y, .z)
+}
+
+function main() {
+    mut candidates: [String:Location] = [:]
+
+    mut cubes: [[i32]] = []
+
+    for line in reader::lines_string(day: 18, examples: false) {
+        cubes.push(utility::format_match(line, format: "%,%,%")!)
+    }
+
+    let row: [bool] = [false;21]
+
+    mut board: [[[bool]]] = []
+    for x in 0..21 {
+        mut rows: [[bool]] = []
+        for y in 0..21 {
+            rows.push(row[..].to_array())
+        }
+
+        board.push(rows)
+    }
+    
+    for i in 0..cubes.size() {
+        board[cubes[i][0]][cubes[i][1]][cubes[i][2]] = true    
+    }
+
+    mut total = 0i32
+    for i in 0..cubes.size() {
+        total += add_location(&mut candidates, &board, cube: cubes[i])
+    }
+
+    mut checked_candidates: [String:Location] = [:]
+    for (_, candidate) in candidates {
+        mut found_x_above = true
+        if candidate.x == 0 {
+            found_x_above = false
+        } else {
+            for x in ((candidate.x-1)..0i32).inclusive() {
+                if board[x][candidate.y][candidate.z] {
+                    found_x_above = false
+                    break
+                }
+            }
+        }
+        
+        mut found_x_below = true
+        for x in (candidate.x+1)..21i32 {
+            if board[x][candidate.y][candidate.z] {
+                found_x_below = false
+                break
+            }
+        }
+
+        if not found_x_above and not found_x_below {
+            mut found_y_above = true
+            if candidate.y == 0 {
+                found_y_above = false
+            } else {
+                for y in ((candidate.y-1)..0i32).inclusive() {
+                    if board[candidate.x][y][candidate.z] {
+                        found_y_above = false
+                        break
+                    }
+                }
+            }
+
+            mut found_y_below = true
+            for y in (candidate.y+1)..21i32 {
+                if board[candidate.x][y][candidate.z] {
+                    found_y_below = false
+                    break
+                }
+            }
+
+            if not found_y_above and not found_y_below {
+                mut found_z_above = true
+                if candidate.z == 0 {
+                    found_z_above = false
+                } else {
+                    for z in ((candidate.z-1)..0i32).inclusive() {
+                        if board[candidate.x][candidate.y][z] {
+                            found_z_above = false
+                            break
+                        }
+                    }
+                }
+
+                mut found_z_below = true
+                for z in (candidate.z+1)..21i32 {
+                    if board[candidate.x][candidate.y][z] {
+                        found_z_below = false
+                        break
+                    }
+                }
+
+                if not found_z_above and not found_z_below {
+                    checked_candidates[candidate.to_string()] = candidate
+                }
+            }
+        }
+    }
+
+    while checked_candidates.size() > 0 {
+        let keys = checked_candidates.keys()
+
+        let current = checked_candidates[keys[0]]
+        mut visited: [String:Location] = [:]
+
+        let edges = fill_area(candidates: &mut checked_candidates, &board, current, &mut visited, edges: 0)
+
+        checked_candidates.remove(keys[0])
+
+        if edges != -1i32 {
+            total -= edges
+        }        
+    }
+
+    println("{}", total)
+}
+
+function fill_area(candidates: &mut [String:Location], board: &[[[bool]]], current: Location, visited: &mut [String:Location], mut edges: i32) throws -> i32 {
+    visited[current.to_string()] = current
+
+    if current.x - 1 > 0 {
+        mut test_location = current
+        test_location.x -= 1
+
+        if not visited.contains(test_location.to_string()) {
+            if candidates.contains(test_location.to_string()) {
+                candidates.remove(test_location.to_string())
+            }
+
+            if board[test_location.x][test_location.y][test_location.z] {
+                edges++
+            } else {
+                edges = fill_area(candidates, board, current: test_location, visited, edges)
+                if edges == -1i32 {
+                    return -1
+                }
+            }
+        }        
+    } else {
+        return -1
+    }
+
+    if current.x + 1 < 21 {
+        mut test_location = current
+        test_location.x += 1
+
+        if not visited.contains(test_location.to_string()) {
+            if candidates.contains(test_location.to_string()) {
+                candidates.remove(test_location.to_string())
+            }
+
+            if board[test_location.x][test_location.y][test_location.z] {
+                edges++
+            } else {
+                edges = fill_area(candidates, board, current: test_location, visited, edges)
+                if edges == -1i32 {
+                    return -1
+                }
+            }
+        }
+    } else {
+        return -1
+    }
+
+    if current.y - 1 > 0 {
+        mut test_location = current
+        test_location.y -= 1
+
+        if not visited.contains(test_location.to_string()) {
+            if candidates.contains(test_location.to_string()) {
+                candidates.remove(test_location.to_string())
+            }
+
+            if board[test_location.x][test_location.y][test_location.z] {
+                edges++
+            } else {
+                edges = fill_area(candidates, board, current: test_location, visited, edges)
+                if edges == -1i32 {
+                    return -1
+                }
+            }
+        }        
+    } else {
+        return -1
+    }
+
+    if current.y + 1 < 21 {
+        mut test_location = current
+        test_location.y += 1
+
+        if not visited.contains(test_location.to_string()) {
+            if candidates.contains(test_location.to_string()) {
+                candidates.remove(test_location.to_string())
+            }
+
+            if board[test_location.x][test_location.y][test_location.z] {
+                edges++
+            } else {
+                edges = fill_area(candidates, board, current: test_location, visited, edges)
+                if edges == -1i32 {
+                    return -1
+                }
+            }
+        }
+    } else {
+        return -1
+    }
+
+    if current.z - 1 > 0 {
+        mut test_location = current
+        test_location.z -= 1
+
+        if not visited.contains(test_location.to_string()) {
+            if candidates.contains(test_location.to_string()) {
+                candidates.remove(test_location.to_string())
+            }
+
+            if board[test_location.x][test_location.y][test_location.z] {
+                edges++
+            } else {
+                edges = fill_area(candidates, board, current: test_location, visited, edges)
+                if edges == -1i32 {
+                    return -1
+                }
+            }
+        }        
+    } else {
+        return -1
+    }
+
+    if current.z + 1 < 21 {
+        mut test_location = current
+        test_location.z += 1
+
+        if not visited.contains(test_location.to_string()) {
+            if candidates.contains(test_location.to_string()) {
+                candidates.remove(test_location.to_string())
+            }
+
+            if board[test_location.x][test_location.y][test_location.z] {
+                edges++
+            } else {
+                edges = fill_area(candidates, board, current: test_location, visited, edges)
+                if edges == -1i32 {
+                    return -1
+                }
+            }
+        }
+    } else {
+        return -1
+    }
+
+    return edges
+}
+
+function add_location(candidates: &mut [String:Location], board: &[[[bool]]], cube: [i32]) throws -> i32 {
+    mut sides = 0i32
+
+    for i in 0..3 {
+        if cube[i] - 1 >= 0 {
+            mut test_cube = cube[..].to_array()
+            test_cube[i]--
+
+            if not board[test_cube[0]][test_cube[1]][test_cube[2]] {
+                sides++
+                let location = Location(x: test_cube[0], y: test_cube[1], z: test_cube[2])
+                candidates[location.to_string()] = location
+            }
+        } else {
+            sides++
+        }
+
+        if cube[i] + 1 < 21 {
+            mut test_cube = cube[..].to_array()
+            test_cube[i]++
+
+            if not board[test_cube[0]][test_cube[1]][test_cube[2]] {
+                sides++
+                let location = Location(x: test_cube[0], y: test_cube[1], z: test_cube[2])
+                candidates[location.to_string()] = location
+            }
+        } else {
+            sides++
+        }
+    }
+
+    return sides
+}

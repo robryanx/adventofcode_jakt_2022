@@ -1,0 +1,41 @@
+/// Expect:
+/// - output: "3390\n"
+
+import reader
+import utility
+
+function main() {
+    mut cubes: [[i32]] = []
+
+    for line in reader::lines_string(day: 18, examples: false) {
+        cubes.push(utility::format_match(line, format: "%,%,%")!)
+    }
+
+    mut total = 0
+    for i in 0..cubes.size() {
+        mut covered = 0
+        for j in 0..cubes.size() {
+            if i != j {
+                mut sides_equal = 0
+                mut off_by_one = false
+                mut off_by_one_side = 0
+                for z in 0..3 {
+                    if cubes[i][z] == cubes[j][z] {
+                        sides_equal++
+                    } else if utility::abs32(cubes[i][z] - cubes[j][z]) == 1 {
+                        off_by_one = true
+                        off_by_one_side = z
+                    }
+                }
+
+                if sides_equal == 2 and off_by_one {
+                    covered++
+                }
+            }
+        }
+
+        total += 6 - covered
+    }
+
+    println("{}", total)
+}
