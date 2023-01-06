@@ -1,0 +1,167 @@
+/// Expect:
+/// - output: "1150\n"
+
+import reader
+import utility
+
+struct Blueprint {
+    number: u8
+    ore_robot_ore: u8
+    clay_robot_ore: u8
+    obsidian_robot_ore: u8
+    obsidian_robot_clay: u8
+    geode_robot_ore: u8
+    geode_robot_obsidian: u8
+    largest_ore: u8
+}
+
+struct Run {
+    minute: u8
+    ore_robot: u8
+    clay_robot: u8
+    obsidian_robot: u8
+    geode_robot: u8
+    ore: u32
+    clay: u32
+    obsidian: u32
+    geode: u32
+
+    function tick(mut this) {
+        .ore += .ore_robot as! u32
+        .clay += .clay_robot as! u32
+        .obsidian += .obsidian_robot as! u32
+        .geode += .geode_robot as! u32
+    }
+
+    function build_ore(mut this, blueprint: Blueprint) {
+        .ore -= blueprint.ore_robot_ore as! u32
+
+        .ore_robot++
+    }
+
+    function build_clay(mut this, blueprint: Blueprint) {
+        .ore -= blueprint.clay_robot_ore as! u32
+
+        .clay_robot++
+    }
+
+    function build_obsidian(mut this, blueprint: Blueprint) {
+        .ore -= blueprint.obsidian_robot_ore as! u32
+        .clay -= blueprint.obsidian_robot_clay as! u32
+
+        .obsidian_robot++
+    }
+
+    function build_geode(mut this, blueprint: Blueprint) {
+        .ore -= blueprint.geode_robot_ore as! u32
+        .obsidian -= blueprint.geode_robot_obsidian as! u32
+
+        .geode_robot++
+    }
+}
+
+struct Cost {
+    ore: u8
+    clay: u8
+    obsidian: u8
+}
+
+enum Option {
+    BuildOre
+    BuildClay
+    BuildObsidian
+    BuildGeode
+    DoNothing
+}
+
+function main() {
+    mut blueprints: [Blueprint] = []
+
+    for line in reader::lines_string(day: 19, examples: false) {
+        let numbers = utility::format_match(line, format: "Blueprint %: Each ore robot costs % ore. Each clay robot costs % ore. Each obsidian robot costs % ore and % clay. Each geode robot costs % ore and % obsidian.")
+
+        mut blueprint = Blueprint(
+            number: numbers![0] as! u8
+            ore_robot_ore: numbers![1] as! u8
+            clay_robot_ore: numbers![2] as! u8
+            obsidian_robot_ore: numbers![3] as! u8
+            obsidian_robot_clay: numbers![4] as! u8
+            geode_robot_ore: numbers![5] as! u8
+            geode_robot_obsidian: numbers![6] as! u8
+            largest_ore: 0
+        )
+
+        blueprint.largest_ore = blueprint.ore_robot_ore
+        if blueprint.clay_robot_ore > blueprint.largest_ore {
+            blueprint.largest_ore = blueprint.clay_robot_ore
+        }
+        if blueprint.obsidian_robot_ore > blueprint.largest_ore {
+            blueprint.largest_ore = blueprint.obsidian_robot_ore
+        }
+        if blueprint.geode_robot_ore > blueprint.largest_ore {
+            blueprint.largest_ore = blueprint.geode_robot_ore
+        }
+
+        blueprints.push(blueprint)
+    }
+
+    mut total = 0u32
+    for blueprint in blueprints {
+        mut run = Run(
+            minute: 0
+            ore_robot: 1
+            clay_robot: 0
+            obsidian_robot: 0
+            geode_robot: 0
+            ore: 0
+            clay: 0
+            obsidian: 0
+            geode: 0
+        )
+
+        mut best_result = 0u32
+
+        recurse_option(run, blueprint, option: Option::DoNothing, &mut best_result)
+
+        total += blueprint.number as! u32 * best_result
+    }
+
+    println("{}", total)
+}
+
+function recurse_option(mut run: Run, blueprint: Blueprint, option: Option, best_result: &mut u32) {
+    run.minute++
+    run.tick()
+
+    if run.minute == 24 {
+        if run.geode > best_result {
+            best_result = run.geode
+        }
+
+        return
+    }
+
+    match option {
+        BuildOre => run.build_ore(blueprint)
+        BuildClay => run.build_clay(blueprint)
+        BuildObsidian => run.build_obsidian(blueprint)
+        BuildGeode => run.build_geode(blueprint)
+        DoNothing => {}
+    }
+
+    if run.ore >= blueprint.geode_robot_ore as! u32 and run.obsidian >= blueprint.geode_robot_obsidian as! u32 {
+        recurse_option(run, blueprint, option: Option::BuildGeode, best_result)
+    } else if run.ore >= blueprint.obsidian_robot_ore as! u32 and run.clay >= blueprint.obsidian_robot_clay as! u32 and run.obsidian_robot < blueprint.geode_robot_obsidian {
+        recurse_option(run, blueprint, option: Option::BuildObsidian, best_result)
+    } else {
+        if run.ore >= blueprint.clay_robot_ore as! u32 and run.clay_robot < blueprint.obsidian_robot_clay {
+            recurse_option(run, blueprint, option: Option::BuildClay, best_result)
+        }
+
+        if run.ore >= blueprint.ore_robot_ore as! u32 and run.ore_robot < blueprint.largest_ore {
+            recurse_option(run, blueprint, option: Option::BuildOre, best_result)
+        }
+
+        recurse_option(run, blueprint, option: Option::DoNothing, best_result) 
+    }
+}
