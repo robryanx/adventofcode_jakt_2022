@@ -1,0 +1,122 @@
+/// Expect:
+/// - output: "9937909178485\n"
+
+import reader
+import utility
+
+class Number {
+    public value: i32
+    public base: i64
+    public position: i32
+    public next: Number?
+}
+
+function main() {
+    mut numbers: [i32] = []
+    for number in reader::lines_int(day: 20, examples: false) {
+        numbers.push(number as !i32)
+    }
+
+    let size = numbers.size() as! i32
+
+    let key = 811589153
+
+    mut numbers_key: [Number] = []    
+    mut zero: Number? = None
+    mut prev_number: Number? = None
+    mut i = 0i32
+    for number in numbers {
+        mut keyed = (number as! i64 * key) % (size as! i64 - 1)
+
+        mut current_number = Number(
+            value: keyed as! i32
+            base: (number as! i64 * key)
+            position: i
+            next: None
+        )
+
+        if prev_number.has_value() {
+            prev_number!.next = current_number
+        }        
+
+        if current_number.base == 0 {
+            zero = current_number
+        }
+
+        numbers_key.push(current_number)
+        i++
+
+        prev_number = current_number
+    }
+
+    prev_number!.next = numbers_key[0]
+
+    mut current = numbers_key[0]
+    mut total = 0
+    for i in 0..(numbers_key.size() * 10) {
+        move_number(&mut numbers_key, current: current.position, movement: current.value)
+
+        current = current.next!
+    }
+
+    println("{}", numbers_key[(1000+zero!.position) % size].base + numbers_key[(2000+zero!.position) % size].base + numbers_key[(3000+zero!.position) % size].base)
+}
+
+function print_line(numbers_key: &[Number], current: Number, zero: Number) {
+    print("current: {}|{}\n", current.base, current.value)
+
+    for i in 0..numbers_key.size() {
+        print("{}, ", numbers_key[i].base)
+    }
+
+    println("")
+
+    for i in (zero.position as! usize)..numbers_key.size() {
+        print("{}, ", numbers_key[i].base)
+    }
+
+    for i in 0..(zero.position as! usize) {
+        print("{}, ", numbers_key[i].base)
+    }
+
+    println("")
+}
+
+function move_number(numbers_key: &mut [Number], current: i32, movement: i32) {
+    if movement == 0 {
+        return
+    }
+
+    let size = numbers_key.size() as! i32
+    mut from = 0i32
+    mut to = current % size
+
+    mut delta = 1i32
+    if movement < 0 {
+        delta = -1i32
+    }
+
+    for i in (current..(current + movement)) {
+        from = i % size
+        to = (i + delta) % size
+
+        if from < 0 {
+            from %= size
+            from *= -1i32
+            from = size - from
+        }
+
+        if to < 0 {
+            to %= size
+            to *= -1i32
+            to = size - to
+        }
+
+        numbers_key[from].position = to
+        numbers_key[to].position = from
+
+        let tmp = numbers_key[from]
+        numbers_key[from] = numbers_key[to]
+        numbers_key[to] = tmp
+    }
+}

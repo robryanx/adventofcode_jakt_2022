@@ -1,0 +1,87 @@
+/// Expect:
+/// - output: "11616\n"
+
+import reader
+import utility
+
+function main() {
+    mut numbers: [i32] = []
+    for number in reader::lines_int(day: 20, examples: false) {
+        numbers.push(number)
+    }
+
+    let size = numbers.size() as! i32
+
+    mut in_place: [bool] = [false;size]
+
+    mut current = 0i32
+    for i in 0..size {
+        while in_place[current % size] {
+            current++
+        }
+
+        let number = numbers[current % size]
+
+        let to = move(&mut numbers, &mut in_place, current, movement: number)
+        in_place[to] = true
+
+        if number < 0 {
+            current++
+        }
+
+        current -= number / size
+        if current < 0 {
+            current %= size
+            current *= -1i32
+            current = size - current
+        }
+    }
+
+    current = 0
+    while numbers[current] != 0 {
+        current++
+    }
+
+    println("{}", numbers[(1000+current) % size] + numbers[(2000+current) % size] + numbers[(3000+current) % size])
+}
+
+function move(numbers: &mut [i32], in_place: &mut [bool], current: i32, mut movement: i32) -> i32 {
+    let size = numbers.size() as! i32
+
+    mut to = current % size
+    if movement == 0 {
+        return to
+    }
+
+    mut delta = 1i32
+    if movement < 0 {
+        delta = -1i32
+    }
+
+    for i in (current..(current + movement)) {
+        mut from = i % size
+        to = (i + delta) % size
+
+        if from < 0 {
+            from %= size
+            from *= -1i32
+            from = size - from
+        }
+
+        if to < 0 {
+            to %= size
+            to *= -1i32
+            to = size - to
+        }
+
+        let tmp = numbers[from]
+        numbers[from] = numbers[to]
+        numbers[to] = tmp
+
+        let tmp_2 = in_place[from]
+        in_place[from] = in_place[to]
+        in_place[to] = tmp_2
+    }
+
+    return to
+}
