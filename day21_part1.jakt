@@ -1,0 +1,73 @@
+/// Expect:
+/// - output: "282285213953670\n"
+
+import reader
+import utility
+
+enum Operator {
+    Plus
+    Minus
+    Times
+    Divide
+
+    function operate(this, val_a: i64, val_b: i64) -> i64 => match this {
+        Plus => val_a + val_b
+        Minus => val_a - val_b
+        Times => val_a * val_b
+        Divide => val_a / val_b
+    }
+}
+
+struct Operation {
+    var_result: String
+    var_a: String
+    var_b: String
+    op: Operator
+    completed: bool
+}
+
+function main() {
+    mut values: [String:i64] = [:]
+    mut operations: [Operation] = []
+
+    for line in reader::lines_string(day: 21, examples: false) {
+        let line_parts = line.split(' ')
+        let var_result = line_parts[0].substring(start: 0, length: line_parts[0].length()-1)
+
+        if line_parts.size() == 2 {
+            values[var_result] = line_parts[1].to_int()! as! i64
+        } else {
+            let op = match line_parts[2].byte_at(0) {
+                b'+' => Operator::Plus
+                b'-' => Operator::Minus
+                b'*' => Operator::Times
+                else => Operator::Divide
+            }
+
+            operations.push(Operation(
+                var_result
+                var_a: line_parts[1]
+                var_b: line_parts[3]
+                op
+                completed: false
+            ))
+        }
+    }
+    
+    mut any_completed = true
+    while any_completed {
+        any_completed = false
+
+        for i in 0..operations.size() {
+            if not operations[i].completed {
+                if values.contains(operations[i].var_a) and values.contains(operations[i].var_b) {
+                    values[operations[i].var_result] = operations[i].op.operate(val_a: values[operations[i].var_a], val_b: values[operations[i].var_b])
+                    operations[i].completed = true
+                    any_completed = true
+                }
+            }
+        }
+    }
+
+    println("{}", values["root"])
+}

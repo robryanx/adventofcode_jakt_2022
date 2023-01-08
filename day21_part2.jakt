@@ -1,0 +1,150 @@
+/// Expect:
+/// - output: "3699945358564\n"
+
+import reader
+import utility
+
+enum Operator {
+    Plus
+    Minus
+    Times
+    Divide
+
+    function operate(this, val_a: i64, val_b: i64) -> i64 => match this {
+        Plus => val_a + val_b
+        Minus => val_a - val_b
+        Times => val_a * val_b
+        Divide => val_a / val_b
+    }
+}
+
+struct Operation {
+    var_result: String
+    var_a: String
+    var_b: String
+    op: Operator
+    completed: bool
+}
+
+function main() {
+    mut values: [String:i64] = [:]
+    mut operations: [Operation] = []
+
+    for line in reader::lines_string(day: 21, examples: false) {
+        let line_parts = line.split(' ')
+        let var_result = line_parts[0].substring(start: 0, length: line_parts[0].length()-1)
+
+        if var_result == "humn" or var_result == "root" {
+            continue
+        }
+
+        if line_parts.size() == 2 {
+            values[var_result] = line_parts[1].to_int()! as! i64
+        } else {
+            let op = match line_parts[2].byte_at(0) {
+                b'+' => Operator::Plus
+                b'-' => Operator::Minus
+                b'*' => Operator::Times
+                else => Operator::Divide
+            }
+
+            operations.push(Operation(
+                var_result
+                var_a: line_parts[1]
+                var_b: line_parts[3]
+                op
+                completed: false
+            ))
+        }
+    }
+    
+    mut any_completed = true
+    while any_completed {
+        any_completed = false
+
+        for i in 0..operations.size() {
+            if not operations[i].completed {
+                if values.contains(operations[i].var_a) and values.contains(operations[i].var_b) {
+                    values[operations[i].var_result] = operations[i].op.operate(val_a: values[operations[i].var_a], val_b: values[operations[i].var_b])
+                    operations[i].completed = true
+                    any_completed = true
+                }
+            }
+        }
+    }
+
+    mut not_completed: [Operation] = []
+    for operation in operations {
+        if not operation.completed {
+            not_completed.push(operation)
+        }
+    }
+
+    mut humn = 0
+    mut last = 0
+    mut next = 0
+    mut total = 0
+    while humn < 10000 {
+        next = test_equality(values: &values, operations: &not_completed, humn)
+
+        if last != 0 {
+            total += (next - last)
+        }
+
+        last = next
+        humn += 100
+    }
+
+    let average = total / 10000
+
+    humn = 0
+    mut difference = 1
+    while difference != 0 {
+        humn -= (difference / average)
+
+        let test = test_equality(values: &values, operations: &not_completed, humn)
+
+        difference = test - values["grlb"]
+    }
+
+    for humn_refine in (humn-3)..(humn+3) {
+        let test = test_equality(values: &values, operations: &not_completed, humn: humn_refine)
+
+        if test == values["grlb"] {
+            println("{}", humn_refine)
+
+            break
+        }
+    }
+}
+
+function test_equality(values: &[String:i64], operations: &[Operation], humn) throws -> i64 {
+    mut new_operations = operations[..].to_array()
+    mut new_values: [String:i64] = [:]
+    for (key, val) in *values {
+        new_values[key] = val
+    }
+    new_values["humn"] = humn
+
+    mut any_completed = true
+    while any_completed {
+        any_completed = false
+
+        for i in 0..new_operations.size() {
+            if not new_operations[i].completed {
+                if new_values.contains(new_operations[i].var_a) and new_values.contains(new_operations[i].var_b) {
+                    new_values[new_operations[i].var_result] = new_operations[i].op.operate(val_a: new_values[new_operations[i].var_a], val_b: new_values[new_operations[i].var_b])
+
+                    if new_values.contains("fzvp") {
+                        return new_values["fzvp"]
+                    }
+
+                    new_operations[i].completed = true
+                    any_completed = true
+                }
+            }
+        }
+    }
+
+    return 0
+}
