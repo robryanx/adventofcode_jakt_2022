@@ -10,7 +10,7 @@ enum Operator {
     Times
     Divide
 
-    function operate(this, val_a: i64, val_b: i64) -> i64 => match this {
+    fn operate(this, val_a: i64, val_b: i64) -> i64 => match this {
         Plus => val_a + val_b
         Minus => val_a - val_b
         Times => val_a * val_b
@@ -26,12 +26,12 @@ struct Operation {
     completed: bool
 }
 
-function main() {
+fn main() {
     mut values: [String:i64] = [:]
     mut operations: [Operation] = []
 
     for line in reader::lines_string(day: 21, examples: false) {
-        let line_parts = line.split(' ')
+        let line_parts = line.split(c' ')
         let var_result = line_parts[0].substring(start: 0, length: line_parts[0].length()-1)
 
         if line_parts.size() == 2 {

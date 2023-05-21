@@ -4,7 +4,7 @@
 import reader
 import utility
 
-function main() {
+fn main() {
     mut largest = 0
 
     let input = reader::read_input(day: 1, examples: false)

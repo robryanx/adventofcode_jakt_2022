@@ -17,14 +17,14 @@ class Directory {
     public size: i32
 }
 
-function main() {
+fn main() {
     mut directory_hash: [String:Directory] = [:]
 
     mut current_directory: Directory? = None
     mut current_path = Path::from_string("")
     for output_line in reader::lines_string(day: 7) {
         if output_line.byte_at(0) == b'$' {
-            let command_parts = output_line.split(' ')
+            let command_parts = output_line.split(c' ')
             if command_parts[1] == "cd" {
                 if not current_directory.has_value() {
                     current_directory = Directory(
@@ -49,7 +49,7 @@ function main() {
                 }
             }
         } else if current_directory.has_value() {
-            let listing_parts = output_line.split(' ')
+            let listing_parts = output_line.split(c' ')
             if listing_parts[0] == "dir" {
                 mut new_directory = Directory(
                     name: listing_parts[1]
@@ -113,7 +113,7 @@ function main() {
     println("{}", closest_size)
 }
 
-function get_directory(directory_hash: [String:Directory], find: String) -> Directory? {
+fn get_directory(directory_hash: [String:Directory], find: String) -> Directory? {
     for (key, val) in directory_hash {
         if key == find {
             return val

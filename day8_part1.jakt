@@ -3,7 +3,7 @@
 
 import reader
 
-function main() {
+fn main() {
     mut map: [[u8]] = []
 
     for output_line in reader::lines_string(day: 8) {
@@ -29,7 +29,7 @@ function main() {
     println("{}", visible)
 }
 
-function point_visible(map: &[[u8]], y: usize, x: usize) -> bool {
+fn point_visible(map: &[[u8]], y: usize, x: usize) -> bool {
     // from left
     mut found = true
     for check_x in 0..x {

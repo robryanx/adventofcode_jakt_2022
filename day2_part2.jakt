@@ -8,13 +8,13 @@ enum Move {
     Paper
     Scissors
 
-    function score(this) => match this {
+    fn score(this) => match this {
         Rock => 1
         Paper => 2
         Scissors => 3
     }
 
-    function build(move: String) => match move {
+    fn build(move: String) throws => match move {
         "A" | "X" => Move::Rock
         "B" | "Y" => Move::Paper
         else => Move::Scissors
@@ -26,18 +26,18 @@ enum GameState {
     Draw
     Win
 
-    function build(state: String) => match state {
+    fn build(state: String) throws => match state {
         "X" => GameState::Lose
         "Y" => GameState::Draw
         else => GameState::Win
     }
 }
 
-function main() {
+fn main() {
     mut score = 0
 
     for strategy in reader::lines_string(day: 2) {
-        let parts = strategy.split(' ')
+        let parts = strategy.split(c' ')
 
         let their_move = Move::build(move: parts[0])
         let our_move = get_move_from_state(their_move, state: GameState::build(state: parts[1]))
@@ -48,7 +48,7 @@ function main() {
     println("{}", score)
 }
 
-function get_move_from_state(their_move: Move, state: GameState) -> Move => match their_move {
+fn get_move_from_state(their_move: Move, state: GameState) -> Move => match their_move {
     Rock => match state {
         Lose => Move::Scissors
         Draw => Move::Rock
@@ -66,7 +66,7 @@ function get_move_from_state(their_move: Move, state: GameState) -> Move => matc
     }
 }
 
-function game_result(our_move: Move, their_move: Move) -> i64 => match our_move {
+fn game_result(our_move: Move, their_move: Move) -> i64 => match our_move {
     Rock => match their_move {
         Paper => 0
         Rock => 3

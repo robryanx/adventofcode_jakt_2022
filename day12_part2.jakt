@@ -14,7 +14,7 @@ struct Path {
     x: usize
 }
 
-function main() {
+fn main() {
     mut map: [[Position]] = []
     mut starting_postions: [Path] = []
 
@@ -71,7 +71,7 @@ function main() {
     println("{}", shortest)
 }
 
-function should_visit(position: Position, current_height: usize, new_distance: usize) -> bool {
+fn should_visit(position: Position, current_height: usize, new_distance: usize) -> bool {
     if (current_height as! i64 - position.height as! i64) < 2 {
         if (not position.distance.has_value() or new_distance < position.distance!) {
             return true
@@ -81,7 +81,7 @@ function should_visit(position: Position, current_height: usize, new_distance: u
     return false
 }
 
-function visit(map: &mut [[Position]], y: usize, x: usize) {
+fn visit(map: &mut [[Position]], y: usize, x: usize) {
     if not map[y][x].distance.has_value() {
         map[y][x].distance = 0
     }

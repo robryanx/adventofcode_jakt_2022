@@ -26,33 +26,33 @@ struct Run {
     obsidian: u32
     geode: u32
 
-    function tick(mut this) {
+    fn tick(mut this) {
         .ore += .ore_robot as! u32
         .clay += .clay_robot as! u32
         .obsidian += .obsidian_robot as! u32
         .geode += .geode_robot as! u32
     }
 
-    function build_ore(mut this, blueprint: Blueprint) {
+    fn build_ore(mut this, blueprint: Blueprint) {
         .ore -= blueprint.ore_robot_ore as! u32
 
         .ore_robot++
     }
 
-    function build_clay(mut this, blueprint: Blueprint) {
+    fn build_clay(mut this, blueprint: Blueprint) {
         .ore -= blueprint.clay_robot_ore as! u32
 
         .clay_robot++
     }
 
-    function build_obsidian(mut this, blueprint: Blueprint) {
+    fn build_obsidian(mut this, blueprint: Blueprint) {
         .ore -= blueprint.obsidian_robot_ore as! u32
         .clay -= blueprint.obsidian_robot_clay as! u32
 
         .obsidian_robot++
     }
 
-    function build_geode(mut this, blueprint: Blueprint) {
+    fn build_geode(mut this, blueprint: Blueprint) {
         .ore -= blueprint.geode_robot_ore as! u32
         .obsidian -= blueprint.geode_robot_obsidian as! u32
 
@@ -74,7 +74,7 @@ enum Option {
     DoNothing
 }
 
-function main() {
+fn main() {
     mut blueprints: [Blueprint] = []
 
     for line in reader::lines_string(day: 19, examples: false) {
@@ -129,7 +129,7 @@ function main() {
     println("{}", total)
 }
 
-function recurse_option(mut run: Run, blueprint: Blueprint, option: Option, best_result: &mut u32) {
+fn recurse_option(mut run: Run, blueprint: Blueprint, option: Option, best_result: &mut u32) {
     run.minute++
     run.tick()
 

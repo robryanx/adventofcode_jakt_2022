@@ -9,7 +9,7 @@ enum ParseMode {
     Instructions
 }
 
-function main() {
+fn main() {
     let input = reader::read_input(day: 5, examples: false)
 
     mut parse_mode = ParseMode::Stacks
@@ -58,7 +58,7 @@ function main() {
         } else {
             let instruction_parts = parse_move_instruction(line)
 
-            stacks = move(stacks, number: instruction_parts[0], from_stack: instruction_parts[1], to_stack: instruction_parts[2])
+            stacks = execute_instruction(stacks, number: instruction_parts[0], from_stack: instruction_parts[1], to_stack: instruction_parts[2])
             action++
         }
     }
@@ -66,13 +66,13 @@ function main() {
     print_result(stacks)
 }
 
-function parse_move_instruction(line: String) throws -> [i32] {
-    let instruction_parts = line.split(' ')
+fn parse_move_instruction(line: String) throws -> [i32] {
+    let instruction_parts = line.split(c' ')
 
     return [instruction_parts[1].to_int()!, instruction_parts[3].to_int()!, instruction_parts[5].to_int()!]
 }
 
-function print_result(stacks: [[u8]]) {
+fn print_result(stacks: [[u8]]) {
     for i in 0..stacks.size() {
         let last = stacks[i].last()
 
@@ -84,7 +84,7 @@ function print_result(stacks: [[u8]]) {
     println("")
 }
 
-function reverse(mut stacks: [[u8]]) throws -> [[u8]] {
+fn reverse(mut stacks: [[u8]]) throws -> [[u8]] {
     for i in 0..stacks.size() {
         mut new_stack: [u8] = []
         while stacks[i].size() > 0 {
@@ -96,7 +96,7 @@ function reverse(mut stacks: [[u8]]) throws -> [[u8]] {
     return stacks
 }
 
-function move(mut stacks: [[u8]], number: i32, from_stack: i32, to_stack: i32) throws -> [[u8]] {
+fn execute_instruction(mut stacks: [[u8]], number: i32, from_stack: i32, to_stack: i32) throws -> [[u8]] {
     for i in 0..number {
         if stacks[from_stack-1].size() > 0 {
             stacks[to_stack-1].push(stacks[from_stack-1].pop()!)

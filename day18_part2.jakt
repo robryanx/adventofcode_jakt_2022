@@ -9,10 +9,10 @@ struct Location {
     y: i32
     z: i32
 
-    function to_string(this) throws => format("{}-{}-{}", .x, .y, .z)
+    fn to_string(this) throws -> String => format("{}-{}-{}", .x, .y, .z)
 }
 
-function main() {
+fn main() {
     mut candidates: [String:Location] = [:]
 
     mut cubes: [[i32]] = []
@@ -27,7 +27,8 @@ function main() {
     for x in 0..21 {
         mut rows: [[bool]] = []
         for y in 0..21 {
-            rows.push(row[..].to_array())
+            let tmp = row[..].to_array()
+            rows.push(tmp)
         }
 
         board.push(rows)
@@ -131,7 +132,7 @@ function main() {
     println("{}", total)
 }
 
-function fill_area(candidates: &mut [String:Location], board: &[[[bool]]], current: Location, visited: &mut [String:Location], mut edges: i32) throws -> i32 {
+fn fill_area(candidates: &mut [String:Location], board: &[[[bool]]], current: Location, visited: &mut [String:Location], mut edges: i32) throws -> i32 {
     visited[current.to_string()] = current
 
     if current.x - 1 > 0 {
@@ -269,7 +270,7 @@ function fill_area(candidates: &mut [String:Location], board: &[[[bool]]], curre
     return edges
 }
 
-function add_location(candidates: &mut [String:Location], board: &[[[bool]]], cube: [i32]) throws -> i32 {
+fn add_location(candidates: &mut [String:Location], board: &[[[bool]]], cube: [i32]) throws -> i32 {
     mut sides = 0i32
 
     for i in 0..3 {

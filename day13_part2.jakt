@@ -11,7 +11,7 @@ struct PacketOrValue {
     base: String
 }
 
-function main() {
+fn main() {
     mut input = reader::read_input(day: 13, examples: false)
 
     mut packets: [PacketOrValue] = []
@@ -60,7 +60,7 @@ function main() {
     println("{}", splitters[0] * splitters[1])
 }
 
-function check_order(anon mut packet_a: PacketOrValue, anon mut packet_b: PacketOrValue) throws -> u8 {
+fn check_order(anon mut packet_a: PacketOrValue, anon mut packet_b: PacketOrValue) throws -> u8 {
     if packet_a.value.has_value() and packet_b.value.has_value() {
         if packet_a.value! < packet_b.value! {
             return 1
@@ -119,7 +119,7 @@ function check_order(anon mut packet_a: PacketOrValue, anon mut packet_b: Packet
     return 2
 }
 
-function parse_packet(mut packet: String, splitter: bool = false) throws -> (String, PacketOrValue) {
+fn parse_packet(mut packet: String, splitter: bool = false) throws -> (String, PacketOrValue) {
     mut values = PacketOrValue(
         packet: []
         value: None

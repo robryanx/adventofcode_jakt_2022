@@ -11,7 +11,7 @@ class Number {
     public next: Number?
 }
 
-function main() {
+fn main() {
     mut numbers: [i32] = []
     for number in reader::lines_int(day: 20, examples: false) {
         numbers.push(number as !i32)
@@ -62,7 +62,7 @@ function main() {
     println("{}", numbers_key[(1000+zero!.position) % size].base + numbers_key[(2000+zero!.position) % size].base + numbers_key[(3000+zero!.position) % size].base)
 }
 
-function print_line(numbers_key: &[Number], current: Number, zero: Number) {
+fn print_line(numbers_key: &[Number], current: Number, zero: Number) {
     print("current: {}|{}\n", current.base, current.value)
 
     for i in 0..numbers_key.size() {
@@ -82,7 +82,7 @@ function print_line(numbers_key: &[Number], current: Number, zero: Number) {
     println("")
 }
 
-function move_number(numbers_key: &mut [Number], current: i32, movement: i32) {
+fn move_number(numbers_key: &mut [Number], current: i32, movement: i32) {
     if movement == 0 {
         return
     }

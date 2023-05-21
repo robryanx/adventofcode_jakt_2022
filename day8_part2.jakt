@@ -3,7 +3,7 @@
 
 import reader
 
-function main() {
+fn main() {
     mut map: [[u8]] = []
 
     for output_line in reader::lines_string(day: 8) {
@@ -30,7 +30,7 @@ function main() {
     println("{}", top_score)
 }
 
-function get_score(map: &[[u8]], y: usize, x: usize) -> i64 {
+fn get_score(map: &[[u8]], y: usize, x: usize) -> i64 {
     // from left
     mut left = 0
     for check_x in (x as! i64 -1)..-1 {

@@ -4,7 +4,7 @@
 import reader
 import utility
 
-function main() {
+fn main() {
     mut cubes: [[i32]] = []
 
     for line in reader::lines_string(day: 18, examples: false) {

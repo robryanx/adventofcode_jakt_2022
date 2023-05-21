@@ -9,7 +9,7 @@ struct Part {
     y: usize
 }
 
-function main() {
+fn main() {
     let jets = reader::read_input(day: 17, examples: false)
 
     mut row: [bool] = [false, false, false, false, false, false, false]
@@ -68,7 +68,8 @@ function main() {
         let add_height = 4 + shape_height as! i64 - (board_height as! i64 - height as! i64)
         if add_height > 0 {
             for x in 0..add_height {
-                board.push(row[..].to_array())
+                let current_row = row[..].to_array()
+                board.push(current_row)
             }
         }
 
@@ -144,7 +145,7 @@ function main() {
     println("{}", height)
 }
 
-function print_board(board: [[bool]]) {
+fn print_board(board: [[bool]]) {
     for y in 0..board.size() {
         for x in 0..board[0].size() {
             if board[y][x] {

@@ -8,24 +8,24 @@ enum Move {
     Paper
     Scissors
 
-    function score(this) => match this {
+    fn score(this) => match this {
         Rock => 1
         Paper => 2
         Scissors => 3
     }
 
-    function build(move: String) => match move {
+    fn build(move: String) throws => match move {
         "A" | "X" => Move::Rock
         "B" | "Y" => Move::Paper
         else => Move::Scissors
     }
 }
 
-function main() {
+fn main() {
     mut score = 0
 
     for strategy in reader::lines_string(day: 2) {
-        let parts = strategy.split(' ')
+        let parts = strategy.split(c' ')
 
         let our_move = Move::build(move: parts[1])
         let their_move = Move::build(move: parts[0])
@@ -36,7 +36,7 @@ function main() {
     println("{}", score)
 }
 
-function game_result(our_move: Move, their_move: Move) -> i64 {
+fn game_result(our_move: Move, their_move: Move) -> i64 {
     return match our_move {
         Rock => match their_move {
             Paper => 0

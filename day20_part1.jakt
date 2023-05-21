@@ -4,7 +4,7 @@
 import reader
 import utility
 
-function main() {
+fn main() {
     mut numbers: [i32] = []
     for number in reader::lines_int(day: 20, examples: false) {
         numbers.push(number)
@@ -22,7 +22,7 @@ function main() {
 
         let number = numbers[current % size]
 
-        let to = move(&mut numbers, &mut in_place, current, movement: number)
+        let to = move_places(&mut numbers, &mut in_place, current, movement: number)
         in_place[to] = true
 
         if number < 0 {
@@ -45,7 +45,7 @@ function main() {
     println("{}", numbers[(1000+current) % size] + numbers[(2000+current) % size] + numbers[(3000+current) % size])
 }
 
-function move(numbers: &mut [i32], in_place: &mut [bool], current: i32, mut movement: i32) -> i32 {
+fn move_places(numbers: &mut [i32], in_place: &mut [bool], current: i32, mut movement: i32) -> i32 {
     let size = numbers.size() as! i32
 
     mut to = current % size

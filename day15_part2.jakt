@@ -20,7 +20,7 @@ struct SensorBeacon {
     distance: i32
 }
 
-function main() {
+fn main() {
     mut board_min = 0i32
     mut board_max = 4000000i32
 
@@ -79,7 +79,7 @@ function main() {
     }
 }
 
-function range_gaps_optimised(ranges: &[Ranged], board_min: i32, board_max: i32) throws -> [Ranged] {
+fn range_gaps_optimised(ranges: &[Ranged], board_min: i32, board_max: i32) throws -> [Ranged] {
     let size = ranges.size()
 
     for i in 0..size {
@@ -93,8 +93,8 @@ function range_gaps_optimised(ranges: &[Ranged], board_min: i32, board_max: i32)
     return []
 }
 
-function range_gaps(ranges: &[Ranged], board_min: i32, board_max: i32) throws -> [Ranged] {
-    utility::sort(values: *ranges, sorter: &function(anon item_a: &Ranged, anon item_b: &Ranged) -> i8 {
+fn range_gaps(ranges: &[Ranged], board_min: i32, board_max: i32) throws -> [Ranged] {
+    utility::sort(values: *ranges, sorter: &fn(anon item_a: &Ranged, anon item_b: &Ranged) -> i8 {
         if item_a.start == item_b.start {
             if item_a.end > item_b.end {
                 return 1
@@ -166,6 +166,6 @@ function range_gaps(ranges: &[Ranged], board_min: i32, board_max: i32) throws ->
     return gaps
 }
 
-function manhattan(position_a: Position, position_b: Position) -> i32 {
+fn manhattan(position_a: Position, position_b: Position) -> i32 {
     return utility::abs32(position_a.x - position_b.x) + utility::abs32(position_a.y - position_b.y)
 }

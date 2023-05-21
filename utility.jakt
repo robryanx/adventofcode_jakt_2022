@@ -1,6 +1,6 @@
 /// Expect: Skip
 
-function string_to_char_array(anon str: String) throws -> [u8] {
+fn string_to_char_array(anon str: String) throws -> [u8] {
     mut chars: [u8] = []
     for i in ..str.length() {
         chars.push(str.byte_at(i))
@@ -9,7 +9,7 @@ function string_to_char_array(anon str: String) throws -> [u8] {
     return chars
 }
 
-function char_array_to_string(anon char_arr: [u8]) throws -> String {
+fn char_array_to_string(anon char_arr: [u8]) throws -> String {
     mut sb = StringBuilder:: create()
 
     for i in ..char_arr.size() {
@@ -19,7 +19,7 @@ function char_array_to_string(anon char_arr: [u8]) throws -> String {
     return sb.to_string()
 }
 
-function sort<T>(mut values: [T], sorter: &function(anon item_a: &T, anon item_b: &T) -> i8, low: i32 = 0, mut high: i32 = -1i32) {
+fn sort<T>(mut values: [T], sorter: &fn(anon item_a: &T, anon item_b: &T) -> i8, low: i32 = 0, mut high: i32 = -1i32) {
     if high == -1i32 {
         high = values.size() as! i32 - 1
     }
@@ -45,12 +45,12 @@ function sort<T>(mut values: [T], sorter: &function(anon item_a: &T, anon item_b
             values[pi] = tmp
         }
 
-        sort(values, sorter, low, pi - 1)
-        sort(values, sorter, pi+1, high)
+        sort(values, sorter, low, high: pi - 1)
+        sort(values, sorter, low: pi+1, high)
     }
 }
 
-function array_remove(arr: [String], remove_str: String) throws -> [String] {
+fn array_remove(arr: [String], remove_str: String) throws -> [String] {
     mut new_array: [String] = []
 
     for str_ in arr.iterator() {
@@ -62,7 +62,7 @@ function array_remove(arr: [String], remove_str: String) throws -> [String] {
     return new_array
 }
 
-function array_join<T>(arr: [T]) throws -> String {
+fn array_join<T>(arr: [T]) throws -> String {
     mut sb = StringBuilder::create()
 
     for item in arr {
@@ -72,7 +72,7 @@ function array_join<T>(arr: [T]) throws -> String {
     return sb.to_string()
 }
 
-function abs(anon number: i64) -> i64 {
+fn abs(anon number: i64) -> i64 {
     if number < 0 {
         return number * -1
     }
@@ -80,7 +80,7 @@ function abs(anon number: i64) -> i64 {
     return number
 }
 
-function abs32(anon number: i32) -> i32 {
+fn abs32(anon number: i32) -> i32 {
     if number < 0 {
         return number * -1i32
     }
@@ -88,7 +88,7 @@ function abs32(anon number: i32) -> i32 {
     return number
 }
 
-function into_set(anon x: &ArraySlice<u8>) throws -> {u8} {
+fn into_set(anon x: &ArraySlice<u8>) throws -> {u8} {
     mut set: {u8} = {}
     for a in *x {
         set.add(a)
@@ -97,7 +97,7 @@ function into_set(anon x: &ArraySlice<u8>) throws -> {u8} {
     return set
 }
 
-function intersect_sets<T>(anon a: Set<T>, anon b: Set<T>) throws -> {T} {
+fn intersect_sets<T>(anon a: Set<T>, anon b: Set<T>) throws -> {T} {
     mut intersect: {u8} = {}
 
     for x in a {
@@ -109,7 +109,7 @@ function intersect_sets<T>(anon a: Set<T>, anon b: Set<T>) throws -> {T} {
     return intersect
 }
 
-function split(input: String, separator: c_char = '\n') throws -> [String] {
+fn split(input: String, separator: c_char = c'\n') throws -> [String] {
     mut results: [String] = []
 
     mut builder = StringBuilder::create()
@@ -127,7 +127,7 @@ function split(input: String, separator: c_char = '\n') throws -> [String] {
     return results
 }
 
-function split_on_string(input: String, separator: String) throws -> [String] {
+fn split_on_string(input: String, separator: String) throws -> [String] {
     mut results: [String] = []
 
     mut builder = StringBuilder::create()
@@ -159,7 +159,7 @@ function split_on_string(input: String, separator: String) throws -> [String] {
     return results
 }
 
-function trim(anon input: String) -> String {
+fn trim(anon input: String) throws -> String {
     mut start = 0uz
     for i in 0..input.length() {
         if input.byte_at(i) != b' ' {
@@ -188,8 +188,8 @@ function trim(anon input: String) -> String {
     return input.substring(start, length: end-start)
 }
 
-function list(anon input: String) throws -> [String] {
-    mut parts = input.split(',')
+fn list(anon input: String) throws -> [String] {
+    mut parts = input.split(c',')
 
     for i in 0..parts.size() {
         parts[i] = trim(parts[i])
@@ -198,9 +198,9 @@ function list(anon input: String) throws -> [String] {
     return parts
 }
 
-function is_number_part(anon c: u8) -> bool => (c >= b'0' and c <= b'9') or c == b'-'
+fn is_number_part(anon c: u8) -> bool => (c >= b'0' and c <= b'9') or c == b'-'
 
-function format_match(mut line: String, mut format: String) throws -> [i32]? {
+fn format_match(mut line: String, mut format: String) throws -> [i32]? {
     line = line.replace(replace: " ", with: "")
     format = format.replace(replace: " ", with: "")
 
@@ -239,7 +239,7 @@ struct Enumerator<T> {
     index: usize
     iterator: ArrayIterator<T>
 
-    function next(mut this) -> (usize, T)? {
+    fn next(mut this) -> (usize, T)? {
         .index++
 
         let item: T? = .iterator.next()
@@ -252,7 +252,7 @@ struct Enumerator<T> {
     }
 }
 
-function enumerate<T>(anon iterator: ArrayIterator<T>) -> Enumerator<T> {
+fn enumerate<T>(anon iterator: ArrayIterator<T>) -> Enumerator<T> {
     return Enumerator(
         index: 0
         iterator

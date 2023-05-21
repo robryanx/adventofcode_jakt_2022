@@ -20,7 +20,7 @@ struct Monkey {
     divisor_false: usize
 }
 
-function main() {
+fn main() {
     let input = reader::read_input(day: 11, examples: false)
 
     mut lowest_common_multiple = 1uz
@@ -85,7 +85,7 @@ function main() {
     println("{}", inspections[0] * inspections[1])
 }
 
-function check_lowest_common_multiple(anon a: usize, anon b: usize) -> usize {
+fn check_lowest_common_multiple(anon a: usize, anon b: usize) -> usize {
     mut check_a = a
     mut check_b = b
 
@@ -102,7 +102,7 @@ function check_lowest_common_multiple(anon a: usize, anon b: usize) -> usize {
     return check_a
 }
 
-function parse_monkey(lines: [String]) throws -> Monkey {
+fn parse_monkey(lines: [String]) throws -> Monkey {
     mut number = 0uz
     mut items: [usize] = []
     mut operation: Operation = Operation::Plus
@@ -119,7 +119,7 @@ function parse_monkey(lines: [String]) throws -> Monkey {
             }
             1 => {
                 let line_ = line.replace(replace: "  Starting items: ", with: "")
-                let parts = line_.split(',')
+                let parts = line_.split(c',')
                 for item in parts {
                     items.push(item.to_uint()! as! usize)
                 }

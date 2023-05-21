@@ -9,7 +9,7 @@ struct PacketOrValue {
     value: i32?
 }
 
-function main() {
+fn main() {
     let input = reader::read_input(day: 13, examples: false)
 
     mut pairs: [String] = []
@@ -37,7 +37,7 @@ function main() {
     println("{}", total)
 }
 
-function check_order(anon mut packet_a: PacketOrValue, anon mut packet_b: PacketOrValue) throws -> u8 {
+fn check_order(anon mut packet_a: PacketOrValue, anon mut packet_b: PacketOrValue) throws -> u8 {
     if packet_a.value.has_value() and packet_b.value.has_value() {
         if packet_a.value! < packet_b.value! {
             return 1
@@ -88,7 +88,7 @@ function check_order(anon mut packet_a: PacketOrValue, anon mut packet_b: Packet
     return 2
 }
 
-function parse_packet(mut packet: String) throws -> (String, PacketOrValue) {
+fn parse_packet(mut packet: String) throws -> (String, PacketOrValue) {
     mut values = PacketOrValue(
         packet: []
         value: None

@@ -4,7 +4,7 @@
 import reader
 import utility
 
-function main() {
+fn main() {
     mut total = 0
 
     mut current_group: [String] = []
@@ -19,7 +19,7 @@ function main() {
     println("{}", total)
 }
 
-function check_group(group: [String]) throws -> u8 {
+fn check_group(group: [String]) throws -> u8 {
     mut candidates = utility::string_to_char_array(group[0])
     mut new_candidates: [u8] = []
 
@@ -44,7 +44,7 @@ function check_group(group: [String]) throws -> u8 {
     return candidates[0]
 }
 
-function check_compartments(compartment_a: String, compartment_b: String) throws -> i64 {
+fn check_compartments(compartment_a: String, compartment_b: String) throws -> i64 {
     for i in 0..compartment_a.length() {
         for j in 0..compartment_b.length() {
             if compartment_a.byte_at(i) == compartment_b.byte_at(j) {
@@ -56,10 +56,10 @@ function check_compartments(compartment_a: String, compartment_b: String) throws
     return 0
 }
 
-function convert_priority(char_: u8) -> i64 {
+fn convert_priority(char_: u8) -> i64 {
     if char_ >= 65 and char_ <= 90 {
-        return char_ - 38
+        return char_ as! i64 - 38
     }
 
-    return char_ - 96
+    return char_ as! i64 - 96
 }

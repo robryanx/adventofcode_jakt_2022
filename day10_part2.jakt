@@ -3,7 +3,7 @@
 
 import reader
 
-function main() {
+fn main() {
     mut total = 0
     mut x_register = 1i32
     mut cycle = 0i32
@@ -16,7 +16,7 @@ function main() {
             cycle++
             
         } else {
-            let instruction_parts = instruction.split(' ')
+            let instruction_parts = instruction.split(c' ')
             draw(&mut image, cycle, x_register)
             cycle++
             draw(&mut image, cycle, x_register)
@@ -29,7 +29,7 @@ function main() {
     display_image(&mut image)
 }
 
-function draw(image: &mut [bool], cycle: i32, x_register: i32) {
+fn draw(image: &mut [bool], cycle: i32, x_register: i32) {
     mut start = x_register
     if x_register > 0 {
         start--
@@ -44,7 +44,7 @@ function draw(image: &mut [bool], cycle: i32, x_register: i32) {
     }
 }
 
-function display_image(image: &mut [bool]) {
+fn display_image(image: &mut [bool]) {
     for x in 0..6 {
         let start = x * 40
         let end = start + 40

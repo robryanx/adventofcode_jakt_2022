@@ -9,7 +9,7 @@ struct Position {
     y: i32
 }
 
-function main() {
+fn main() {
     mut min_x = 0i32
     mut max_x = 0i32
 
@@ -52,6 +52,6 @@ function main() {
     println("{}", max_x - min_x + 1 - beacon_x.size() as! i32)
 }
 
-function manhattan(position_a: Position, position_b: Position) -> i32 {
+fn manhattan(position_a: Position, position_b: Position) -> i32 {
     return utility::abs32(position_a.x - position_b.x) + utility::abs32(position_a.y - position_b.y)
 }

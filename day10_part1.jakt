@@ -3,7 +3,7 @@
 
 import reader
 
-function main() {
+fn main() {
     mut total = 0
     mut x_register = 1i32
     mut cycle = 0
@@ -13,7 +13,7 @@ function main() {
             cycle++
             total += register_cycle(cycle, x_register)
         } else {
-            let instruction_parts = instruction.split(' ')
+            let instruction_parts = instruction.split(c' ')
             cycle++
             total += register_cycle(cycle, x_register)
             cycle++
@@ -25,7 +25,7 @@ function main() {
     println("{}", total)
 }
 
-function register_cycle(cycle: i64, x_register: i32) -> i64 {
+fn register_cycle(cycle: i64, x_register: i32) -> i64 {
     if cycle == 20 or (cycle > 20 and ((cycle - 20) % 40 == 0)) {
         return cycle * x_register as! i64
     }

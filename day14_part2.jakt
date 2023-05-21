@@ -9,12 +9,12 @@ struct Position {
     y: u32
 }
 
-function main() {
+fn main() {
     mut lines: [[Position]] = []
     for line in reader::lines_string(day: 14, examples: false) {
         mut line_sections: [Position] = []
         for coordinate in utility::split_on_string(input: line, separator: " -> ") {
-            let coordinate_parts = coordinate.split(',')
+            let coordinate_parts = coordinate.split(c',')
 
             line_sections.push(Position(
                 x: coordinate_parts[0].to_uint()!
@@ -95,7 +95,7 @@ function main() {
     println("{}", count)
 }
 
-function drop_sand(board: &mut [[bool]], min_x: u32) -> bool {
+fn drop_sand(board: &mut [[bool]], min_x: u32) -> bool {
     mut current_x = 500u32 - min_x
     mut current_y = 0u32
 
@@ -122,7 +122,7 @@ function drop_sand(board: &mut [[bool]], min_x: u32) -> bool {
     return true
 }
 
-function draw_board(board: &[[bool]]) {
+fn draw_board(board: &[[bool]]) {
     for y in 0..board.size() {
         for x in 0..board[0].size() {
             if board[y][x] {
