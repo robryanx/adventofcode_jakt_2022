@@ -258,3 +258,12 @@ fn enumerate<T>(anon iterator: ArrayIterator<T>) -> Enumerator<T> {
         iterator
     )
 }
+
+fn print_grid(grid: [[u8]]) {
+    for y in ..grid.size() {
+        for x in ..grid[y].size() {
+            print("{}", grid[y][x] as! c_char)
+        }
+        println("")
+    }
+}

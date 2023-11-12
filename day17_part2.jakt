@@ -79,8 +79,7 @@ fn main() {
         let add_height = 4 + shape_height as! i64 - (board_height as! i64 - height as! i64)
         if add_height > 0 {
             for x in 0..add_height {
-                let current_row = row[..].to_array()
-                board.push(current_row)
+                board.push(row[..].to_array())
             }
         }
 
