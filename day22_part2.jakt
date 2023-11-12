@@ -1,0 +1,474 @@
+/// Expect:
+/// - output: "195032\n"
+
+import reader
+import utility
+
+enum Direction {
+    Up
+    Right
+    Down
+    Left
+
+    fn turn_left(this) throws => match this {
+        Direction::Up => Direction::Left
+        Direction::Left => Direction::Down
+        Direction::Down => Direction::Right
+        Direction::Right => Direction::Up
+    }
+
+    fn turn_right(this) throws => match this {
+        Direction::Up => Direction::Right
+        Direction::Right => Direction::Down
+        Direction::Down => Direction::Left
+        Direction::Left => Direction::Up
+    }
+    
+    fn value(this) => match this {
+        Direction::Up => 3uz
+        Direction::Left => 2uz
+        Direction::Down => 1uz
+        Direction::Right => 0uz
+    }
+
+    fn offset(this, new_direction: Direction) -> i64 {
+        return new_direction.value() as !i64 - this.value() as !i64 
+    }
+
+    fn translate(this, offset: i64) throws -> Direction {
+        mut current_direction = this
+        if offset < 0 {
+            for x in ..offset {
+                current_direction = current_direction.turn_left()
+            }
+        } else if offset > 0 {
+            for x in ..offset {
+                current_direction = current_direction.turn_right()
+            }
+        }
+        return current_direction
+    }
+
+    fn draw(this) => match this {
+        Direction::Up => c'^' as! u8
+        Direction::Left => c'<' as! u8
+        Direction::Down => c'v' as! u8
+        Direction::Right => c'>' as! u8
+    }
+}
+
+fn main() {
+    mut grid: [[u8]] = []
+    for line in reader::lines_string(day: 22, examples: false) {
+        grid.push(string_to_char_array(line))
+    }
+
+    let instructions = grid.pop()
+
+    let segment_size = 50uz
+
+    mut segments: [[[[u8]]]] = []
+    for y in ..(grid.size()/segment_size) {
+        let hold: [[u8]] = []
+        segments.push([hold; (grid[0].size()/segment_size)])
+        for x in ..(grid[0].size()/segment_size) {
+            if grid[y*segment_size].size() > x*segment_size and grid[y*segment_size][x*segment_size] != b' ' {
+                mut segment: [[u8]] = []
+                for inner_y in (y*segment_size)..(y*segment_size+segment_size) {
+                    let row = grid[inner_y][(x*segment_size)..(x*segment_size+segment_size)].to_array()
+                    segment.push(row)
+                }
+
+                segments[y][x] = segment
+            }
+        }
+    }
+
+    mut current_x = 0uz
+    mut current_y = 0uz
+    mut current_segment_y = 0uz
+    mut current_segment_x = 1uz
+
+    mut direction = Direction::Right
+    mut direction_offset = 0
+
+    for i in ..segments[current_segment_y][current_segment_x].size() {
+        if grid[0][i] == b'.' {
+            current_x = i
+            break
+        }
+    }
+
+    mut current_digits: [u8] = []
+    for char_ in instructions! {
+        if char_ == b'L' or char_ == b'R' {
+            let steps = get_steps(digits: current_digits)
+            if steps > 0 {
+                let current = do_movement(direction, direction_offset, &segments, steps, current_segment_y, current_segment_x, current_y, current_x)
+                direction_offset = current.0
+                current_segment_y = current.1
+                current_segment_x = current.2
+                current_y = current.3
+                current_x = current.4
+                let visits = current.5
+                draw_visits(&mut grid, segment_size, direction, visits)
+            }
+            current_digits = []
+
+            if char_ == b'L' {
+                direction = direction.turn_left()
+            } else {
+                direction = direction.turn_right()
+            }
+        } else if char_ != b' ' {
+            current_digits.push(char_)
+        }
+    }
+
+    let steps = get_steps(digits: current_digits)
+    if steps > 0 {
+        let current = do_movement(direction, direction_offset, &segments, steps, current_segment_y, current_segment_x, current_y, current_x)
+        direction_offset = current.0
+        current_segment_y = current.1
+        current_segment_x = current.2
+        current_y = current.3
+        current_x = current.4
+        let visits = current.5
+        draw_visits(&mut grid, segment_size, direction, visits)
+    }
+
+    let final_direction = direction.translate(offset: direction_offset)
+
+    // println("direction offset: {}", direction_offset)
+    // println("direction: {}", direction)
+    // println("final direction: {} {}", final_direction, final_direction.value())
+    // println("{}", (current_segment_y * segment_size) + current_y + 1)
+    // println("{}", (current_segment_x * segment_size) + current_x + 1)
+
+    println("{}", (((current_segment_y * segment_size) + current_y + 1) * 1000) + (((current_segment_x * segment_size) + current_x + 1) * 4) + final_direction.value())
+
+    //utility::print_grid(grid)
+}
+
+fn draw_visits(grid: &mut [[u8]], segment_size: usize, direction: Direction, visits: [(i64, usize, usize, usize, usize)]) throws {
+    for i in 0..visits.size() {
+        let y_pos = visits[i].1 * segment_size + visits[i].3
+        let x_pos = visits[i].2 * segment_size + visits[i].4
+
+        let final_direction = direction.translate(offset: visits[i].0)
+
+        grid[y_pos][x_pos] = final_direction.draw()
+    }
+}
+
+fn get_steps(digits: [u8]) -> i64 {
+    mut steps = 0
+    for i in .. digits.size() {
+        steps = steps * 10 + (digits[i] as! i64 - 48)
+    }
+    return steps
+}
+
+fn do_movement(mut direction: Direction, mut direction_offset: i64, segments: &[[[[u8]]]], steps: i64, mut current_segment_y: usize, mut current_segment_x: usize, mut current_y: usize, mut current_x: usize) throws -> (i64, usize, usize, usize, usize, [(i64, usize, usize, usize, usize)]) {   
+    mut visits: [(i64, usize, usize, usize, usize)] = []
+    
+    direction = direction.translate(offset: direction_offset)
+    
+    mut moved = 0
+    while moved < steps {
+        match direction {
+            Direction::Up => {
+                mut check_y = current_y
+                if check_y == 0 {
+                    let check = translate(current_segment_y, current_segment_x, current_y, current_x, direction)
+                    if segments[check.0][check.1][check.2][check.3] != b'#' {
+                        current_segment_y = check.0
+                        current_segment_x = check.1
+                        current_y = check.2
+                        current_x = check.3
+                        direction_offset += direction.offset(new_direction: check.4)
+                        direction = check.4
+                    } else {
+                        break
+                    }
+                } else {
+                    check_y--
+                    if segments[current_segment_y][current_segment_x][check_y][current_x] != b'#' {
+                        current_y = check_y
+                    } else {
+                        break
+                    }
+                }
+            }
+            Direction::Right => {
+                mut check_x = current_x
+                if check_x == segments[current_segment_y][current_segment_x][0].size() - 1 {
+                    let check = translate(current_segment_y, current_segment_x, current_y, current_x, direction)
+                    if segments[check.0][check.1][check.2][check.3] != b'#' {
+                        current_segment_y = check.0
+                        current_segment_x = check.1
+                        current_y = check.2
+                        current_x = check.3
+                        direction_offset += direction.offset(new_direction: check.4)
+                        direction = check.4
+                    } else {
+                        break
+                    }
+                } else {
+                    check_x++
+                    if segments[current_segment_y][current_segment_x][current_y][check_x] != b'#' {
+                        current_x = check_x
+                    } else {
+                        break
+                    }
+                }
+            }
+            Direction::Down => {
+                mut check_y = current_y
+                if check_y == segments[current_segment_y][current_segment_x].size() - 1 {
+                    let check = translate(current_segment_y, current_segment_x, current_y, current_x, direction)
+                    if segments[check.0][check.1][check.2][check.3] != b'#' {
+                        current_segment_y = check.0
+                        current_segment_x = check.1
+                        current_y = check.2
+                        current_x = check.3
+                        direction_offset += direction.offset(new_direction: check.4)
+                        direction = check.4
+                    } else {
+                        break
+                    }
+                } else {
+                    check_y++
+                    if segments[current_segment_y][current_segment_x][check_y][current_x] != b'#' {
+                        current_y = check_y
+                    } else {
+                        break
+                    }
+                }
+            }
+            Direction::Left => {
+                mut check_x = current_x
+                if check_x == 0 {
+                    let check = translate(current_segment_y, current_segment_x, current_y, current_x, direction)
+                    if segments[check.0][check.1][check.2][check.3] != b'#' {
+                        current_segment_y = check.0
+                        current_segment_x = check.1
+                        current_y = check.2
+                        current_x = check.3
+                        direction_offset += direction.offset(new_direction: check.4)
+                        direction = check.4
+                    } else {
+                        break
+                    }
+                } else {
+                    check_x--
+                    if segments[current_segment_y][current_segment_x][current_y][check_x] != b'#' {
+                        current_x = check_x
+                    } else {
+                        break
+                    }
+                }
+            }
+        }
+
+        visits.push((direction_offset, current_segment_y, current_segment_x, current_y, current_x))
+
+        moved++
+    }
+    
+    return (direction_offset, current_segment_y, current_segment_x, current_y, current_x, visits)
+}
+
+fn sample_translate(current_segment_y: usize, current_segment_x: usize, current_y: usize, current_x: usize, direction: Direction) -> (usize, usize, usize, usize, Direction) {
+    if current_segment_y == 0 and current_segment_x == 2 {
+        match direction {
+            Direction::Up => {
+                return (1uz, 0uz, 0uz, 3-current_x, Direction::Down)
+            }
+            Direction::Right => {
+                return (3uz, 3uz, 3-current_y, 3uz, Direction::Left)
+            }
+            Direction::Down => {
+                return (1uz, 2uz, 0uz, current_x, Direction::Down)
+            }
+            Direction::Left => {
+                return (1uz, 1uz, 0uz, current_y, Direction::Right)
+            }
+        }
+    } else if current_segment_y == 1 and current_segment_x == 2 {
+        match direction {
+            Direction::Up => {
+                return (0uz, 2uz, 3uz, current_x, Direction::Up)
+            }
+            Direction::Right => {
+                return (2uz, 3uz, 0uz, 3-current_y, Direction::Down)
+            }
+            Direction::Down => {
+                return (2uz, 2uz, 0uz, current_x, Direction::Down)
+            }
+            Direction::Left => {
+                return (1uz, 1uz, current_y, 3uz, Direction::Left)
+            }
+        }
+    } else if current_segment_y == 2 and current_segment_x == 3 {
+        match direction {
+            Direction::Up => {
+                return (0uz, 2uz, 3uz, current_x, Direction::Up) // TODO: Not needed for sample input
+            }
+            Direction::Right => {
+                return (2uz, 3uz, 0uz, 3-current_y, Direction::Down) // TODO: Not needed for sample input
+            }
+            Direction::Down => {
+                return (2uz, 2uz, 0uz, current_x, Direction::Down) // TODO: Not needed for sample input
+            }
+            Direction::Left => {
+                return (2uz, 2uz, current_y, 3uz, Direction::Left)
+            }
+        }
+    } else if current_segment_y == 2 and current_segment_x == 2 {
+        match direction {
+            Direction::Up => {
+                return (0uz, 2uz, 3uz, current_x, Direction::Up) // TODO: Not needed for sample input
+            }
+            Direction::Right => {
+                return (2uz, 3uz, 0uz, 3-current_y, Direction::Down) // TODO: Not needed for sample input
+            }
+            Direction::Down => {
+                return (1uz, 0uz, 3uz, 3-current_x, Direction::Up) 
+            }
+            Direction::Left => {
+                return (2uz, 2uz, current_y, 3uz, Direction::Left) // TODO: Not needed for sample input
+            }
+        }
+    } else if current_segment_y == 1 and current_segment_x == 0 {
+        match direction {
+            Direction::Up => {
+                return (0uz, 2uz, 3uz, current_x, Direction::Up) // TODO: Not needed for sample input
+            }
+            Direction::Right => {
+                return (1uz, 1uz, current_y, 0uz, Direction::Right)
+            }
+            Direction::Down => {
+                return (1uz, 0uz, 3uz, 3-current_x, Direction::Up) // TODO: Not needed for sample input
+            }
+            Direction::Left => {
+                return (2uz, 2uz, current_y, 3uz, Direction::Left) // TODO: Not needed for sample input
+            }
+        }
+    } else if current_segment_y == 1 and current_segment_x == 1 {
+        match direction {
+            Direction::Up => {
+                return (0uz, 2uz, current_x, 0uz, Direction::Left)
+            }
+            Direction::Right => {
+                return (1uz, 1uz, current_y, 0uz, Direction::Right) // TODO: Not needed for sample input
+            }
+            Direction::Down => {
+                return (1uz, 0uz, 3uz, 3-current_x, Direction::Up) // TODO: Not needed for sample input
+            }
+            Direction::Left => {
+                return (2uz, 2uz, current_y, 3uz, Direction::Left) // TODO: Not needed for sample input
+            }
+        }
+    }
+
+    // should not be reached
+    abort()
+}
+
+fn translate(current_segment_y: usize, current_segment_x: usize, current_y: usize, current_x: usize, direction: Direction) -> (usize, usize, usize, usize, Direction) {
+    if current_segment_y == 0 and current_segment_x == 1 {
+        match direction {
+            Direction::Up => {
+                return (3uz, 0uz, current_x, 0uz, Direction::Right)
+            }
+            Direction::Right => {
+                return (0uz, 2uz, current_y, 0uz, Direction::Right)
+            }
+            Direction::Down => {
+                return (1uz, 1uz, 0uz, current_x, Direction::Down)
+            }
+            Direction::Left => {
+                return (2uz, 0uz, 49-current_y, 0uz, Direction::Right)
+            }
+        }
+    } else if current_segment_y == 0 and current_segment_x == 2 {
+        match direction {
+            Direction::Up => {
+                return (3uz, 0uz, 49uz, current_x, Direction::Up)
+            }
+            Direction::Right => {
+                return (2uz, 1uz, 49-current_y, 49uz, Direction::Left)
+            }
+            Direction::Down => {
+                return (1uz, 1uz, current_x, 49uz, Direction::Left)
+            }
+            Direction::Left => {
+                return (0uz, 1uz, current_y, 49uz, Direction::Left)
+            }
+        }
+    } else if current_segment_y == 1 and current_segment_x == 1 {
+        match direction {
+            Direction::Up => {
+                return (0uz, 1uz, 49uz, current_x, Direction::Up)
+            }
+            Direction::Right => {
+                return (0uz, 2uz, 49uz, current_y, Direction::Up)
+            }
+            Direction::Down => {
+                return (2uz, 1uz, 0uz, current_x, Direction::Down)
+            }
+            Direction::Left => {
+                return (2uz, 0uz, 0uz, current_y, Direction::Down)
+            }
+        }
+    } else if current_segment_y == 2 and current_segment_x == 0 {
+        match direction {
+            Direction::Up => {
+                return (1uz, 1uz, current_x, 0uz, Direction::Right)
+            }
+            Direction::Right => {
+                return (2uz, 1uz, current_y, 0uz, Direction::Right)
+            }
+            Direction::Down => {
+                return (3uz, 0uz, 0uz, current_x, Direction::Down)
+            }
+            Direction::Left => {
+                return (0uz, 1uz, 49-current_y, 0uz, Direction::Right)
+            }
+        }
+    } else if current_segment_y == 2 and current_segment_x == 1 {
+        match direction {
+            Direction::Up => {
+                return (1uz, 1uz, 49uz, current_x, Direction::Up)
+            }
+            Direction::Right => {
+                return (0uz, 2uz, 49-current_y, 0uz, Direction::Right)
+            }
+            Direction::Down => {
+                return (3uz, 0uz, current_x, 49uz, Direction::Left)
+            }
+            Direction::Left => {
+                return (2uz, 0uz, current_y, 49uz, Direction::Left)
+            }
+        }
+    } else if current_segment_y == 3 and current_segment_x == 0 {
+        match direction {
+            Direction::Up => {
+                return (2uz, 0uz, 49uz, current_x, Direction::Up)
+            }
+            Direction::Right => {
+                return (2uz, 1uz, 49uz, current_y, Direction::Up)
+            }
+            Direction::Down => {
+                return (0uz, 2uz, 0uz, current_x, Direction::Down)
+            }
+            Direction::Left => {
+                return (0uz, 1uz, 0uz, current_y, Direction::Down)
+            }
+        }
+    }
+
+    // should not be reached
+    abort()
+}

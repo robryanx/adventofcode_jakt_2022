@@ -1,0 +1,194 @@
+/// Expect:
+/// - output: "123046\n"
+
+import reader
+import utility
+
+enum Direction {
+    Up
+    Right
+    Down
+    Left
+
+    fn turn_left(this) throws => match this {
+        Direction::Up => Direction::Left
+        Direction::Left => Direction::Down
+        Direction::Down => Direction::Right
+        Direction::Right => Direction::Up
+    }
+
+    fn turn_right(this) throws => match this {
+        Direction::Up => Direction::Right
+        Direction::Right => Direction::Down
+        Direction::Down => Direction::Left
+        Direction::Left => Direction::Up
+    }
+    
+    fn value(this) => match this {
+        Direction::Up => 3uz
+        Direction::Left => 2uz
+        Direction::Down => 1uz
+        Direction::Right => 0uz
+    }
+}
+
+fn main() {
+    mut grid: [[u8]] = []
+    for line in reader::lines_string(day: 22, examples: false) {
+        grid.push(string_to_char_array(line))
+    }
+
+    let instructions = grid.pop()
+
+    mut longest = 0uz
+    for i in ..grid.size() {
+        if grid[i].size() > longest {
+            longest = grid[i].size()
+        }
+    }
+
+    for i in ..grid.size() {
+        if grid[i].size() < longest {
+            for x in grid[i].size()..longest {
+                grid[i].push(b' ')
+            }
+        }
+    }
+
+    mut current_x = 0uz
+    mut current_y = 0uz
+    mut direction = Direction::Right
+
+    for i in ..grid[0].size() {
+        if grid[0][i] == b'.' {
+            current_x = i
+            break
+        }
+    }
+
+    mut current_digits: [u8] = []
+    for char_ in instructions! {
+        if char_ == b'L' or char_ == b'R' {
+            let steps = get_steps(digits: current_digits)
+            if steps > 0 {
+                let current = do_movement(direction, &grid, steps, current_x, current_y)
+                current_x = current.0
+                current_y = current.1
+            }
+            current_digits = []
+
+            if char_ == b'L' {
+                direction = direction.turn_left()
+            } else {
+                direction = direction.turn_right()
+            }
+        } else if char_ != b' ' {
+            current_digits.push(char_)
+        }
+    }
+
+    let steps = get_steps(digits: current_digits)
+    if steps > 0 {
+        let current = do_movement(direction, &grid, steps, current_x, current_y)
+        current_x = current.0
+        current_y = current.1
+    }
+
+    println("{}", ((current_y + 1) * 1000) + ((current_x + 1) * 4) + direction.value())
+}
+
+fn get_steps(digits: [u8]) -> i64 {
+    mut steps = 0
+    for i in .. digits.size() {
+        steps = steps * 10 + (digits[i] as! i64 - 48)
+    }
+    return steps
+}
+
+fn do_movement(direction: Direction, grid: &[[u8]], steps: i64, mut current_x: usize, mut current_y: usize) -> (usize, usize) {
+    mut moved = 0
+    while moved < steps {
+        match direction {
+            Direction::Up => {
+                mut check_y = current_y
+                loop {
+                    if check_y == 0 {
+                        check_y = grid.size() - 1
+                    } else {
+                        check_y--
+                    }
+
+                    if grid[check_y][current_x] != b' ' {
+                        break
+                    }
+                }
+
+                if grid[check_y][current_x] == b'#' {
+                    break
+                }
+                current_y = check_y
+            }
+            Direction::Right => {
+                mut check_x = current_x
+                loop {
+                    if check_x == grid[0].size() - 1 {
+                        check_x = 0
+                    } else {
+                        check_x++
+                    }
+
+                    if grid[current_y][check_x] != b' ' {
+                        break
+                    }
+                }
+
+                if grid[current_y][check_x] == b'#' {
+                    break
+                }
+                current_x = check_x
+            }
+            Direction::Down => {
+                mut check_y = current_y
+                loop {
+                    if check_y == grid.size() - 1 {
+                        check_y = 0
+                    } else {
+                        check_y++
+                    }
+
+                    if grid[check_y][current_x] != b' ' {
+                        break
+                    }
+                }
+
+                if grid[check_y][current_x] == b'#' {
+                    break
+                }
+                current_y = check_y
+            }
+            Direction::Left => {
+                mut check_x = current_x
+                loop {
+                    if check_x == 0 {
+                        check_x = grid[0].size() - 1
+                    } else {
+                        check_x--
+                    }
+
+                    if grid[current_y][check_x] != b' ' {
+                        break
+                    }
+                }
+
+                if grid[current_y][check_x] == b'#' {
+                    break
+                }
+                current_x = check_x
+            }
+        }
+
+        moved++
+    }
+    
+    return (current_x, current_y)
+}
