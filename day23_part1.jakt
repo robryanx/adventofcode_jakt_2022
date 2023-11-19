@@ -1,0 +1,190 @@
+/// Expect:
+/// - output: "3788\n"
+
+import reader
+import utility
+
+enum Direction {
+    North
+    South
+    West
+    East
+}
+
+fn main() {
+    mut grid: [[u8]] = []
+    for line in reader::lines_string(day: 23, examples: false) { 
+        grid.push(string_to_char_array(line))
+    }
+
+    grid = utility::extend_grid(&grid)
+
+    mut test_order: [Direction] = [
+        Direction::North,
+        Direction::South,
+        Direction::West,
+        Direction::East
+    ]
+
+    for i in ..10 {
+        let proposals = propose(grid: &grid, test_order)
+
+        for (proposed, current) in proposals {
+            if current.has_value() {
+                let proposed_y = proposed / grid[0].size() as !i64
+                let proposed_x = proposed % grid[0].size() as !i64
+
+                let current_y = current! / grid[0].size() as !i64
+                let current_x = current! % grid[0].size() as !i64
+
+                grid[current_y as! usize][current_x as! usize] = c'.' as! u8
+                grid[proposed_y as! usize][proposed_x as! usize] = c'#' as! u8
+            }
+        }
+
+        test_order = new_test_order(test_order)
+    }
+
+    let box = utility::grid_bounding_box(&grid)
+    println("{}", ground_in_bounding(&grid, box))
+}
+
+fn ground_in_bounding(grid: &[[u8]], box: utility::BoundingBox) -> usize {
+    mut count = 0uz
+    for y in (box.smallest_y..box.largest_y).inclusive() {
+        for x in (box.smallest_x..box.largest_x).inclusive() {
+            if grid[y][x] == c'.' as! u8 {
+                count++
+            }
+        }
+    }
+
+    return count
+}
+
+fn new_test_order(test_order: [Direction]) throws -> [Direction] {
+    return [
+        test_order[1],
+        test_order[2],
+        test_order[3],
+        test_order[0]
+    ]
+}
+
+fn propose(grid: &[[u8]], test_order: [Direction]) throws -> [i64:i64?] {
+    mut proposals: [i64:i64?] = [:]
+    for y in ..grid.size() {
+        for x in ..grid[0].size() {
+            if grid[y][x] == c'#' as! u8 {
+                if not needs_move(&grid, y, x) {
+                    continue
+                }
+
+                for direction in test_order {
+                    let move = test_direction(&grid, y, x, direction)
+                    if move.has_value() {
+                        let pos = move!.0 * grid[0].size() as! i64 + move!.1
+                        if proposals.contains(pos) {
+                            proposals[pos] = None
+                        } else {
+                            proposals[pos] = (y * grid[0].size() + x) as! i64
+                        }
+
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    return proposals
+}
+
+fn needs_move(grid: &[[u8]], y: usize, x: usize) -> bool {
+    if y > 0 {
+        for test_x in (x-1)..(x+2) {
+            if test_x >=0 and test_x < grid[0].size() {
+                if grid[y-1][test_x] == c'#' as! u8 {
+                    return true
+                }
+            }
+        }
+    }
+
+    if y < grid.size() - 1 {
+        for test_x in (x-1)..(x+2) {
+            if test_x >=0 and test_x < grid[0].size() {
+                if grid[y+1][test_x] == c'#' as! u8 {
+                    return true
+                }
+            }
+        }
+    }
+
+    if x > 0 and grid[y][x-1] == c'#' as! u8 {
+        return true
+    }
+
+    if x < grid[0].size() - 1 and grid[y][x+1] == c'#' as! u8 {
+        return true
+    }
+
+    return false
+}
+
+fn test_direction(grid: &[[u8]], y: usize, x: usize, direction: Direction) -> (i64, i64)? {
+    match direction {
+        Direction::North => {
+            if y == 0 {
+                return (-1, x as !i64)
+            }
+            for test_x in (x-1)..(x+2) {
+                if test_x >=0 and test_x < grid[0].size() {
+                    if grid[y-1][test_x] == c'#' as! u8 {
+                        return None
+                    }
+                }
+            }
+            return (y as! i64 -1, x as !i64)
+        },
+        Direction::South => {
+            if y == grid.size() - 1 {
+                return (y as! i64 +1, x as !i64)
+            }
+            for test_x in (x-1)..(x+2) {
+                if test_x >=0 and test_x < grid[0].size() {
+                    if grid[y+1][test_x] == c'#' as! u8 {
+                        return None
+                    }
+                }
+            }
+            return (y as! i64 +1, x as !i64)
+        },
+        Direction::East => {
+            if x == grid[0].size() - 1 {
+                return (y as! i64, x as! i64 + 1)
+            }
+            for test_y in (y-1)..(y+2) {
+                if test_y >=0 and test_y < grid.size() {
+                    if grid[test_y][x+1] == c'#' as! u8 {
+                        return None
+                    }
+                }
+            }
+            return (y as !i64, x as !i64 + 1)
+        },
+        Direction::West => {
+            if x == 0 {
+                return (y as! i64, -1)
+            }
+            for test_y in (y-1)..(y+2) {
+                if test_y >=0 and test_y < grid.size() {
+                    if grid[test_y][x-1] == c'#' as! u8 {
+                        return None
+                    }
+                }
+            }
+            return (y as !i64, x as !i64 - 1)
+        }
+    }
+}

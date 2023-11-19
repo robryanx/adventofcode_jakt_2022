@@ -267,3 +267,76 @@ fn print_grid(grid: [[u8]]) {
         println("")
     }
 }
+
+struct BoundingBox {
+    smallest_y: usize,
+    largest_y: usize,
+    smallest_x: usize,
+    largest_x: usize
+}
+
+fn grid_bounding_box(grid: &[[u8]]) throws -> BoundingBox {
+    mut smallest_y = grid.size()
+    mut largest_y = 0uz
+
+    mut smallest_x = grid[0].size()
+    mut largest_x = 0uz
+
+    for y in ..grid.size() {
+        for x in ..grid[0].size() {
+            if grid[y][x] == c'#' as! u8 {
+                if y > largest_y {
+                    largest_y = y
+                }
+                if y < smallest_y {
+                    smallest_y = y
+                }
+                if x > largest_x {
+                    largest_x = x
+                }
+                if x < smallest_x {
+                    smallest_x = x
+                }
+            }
+        }
+    }
+
+    return BoundingBox(
+        smallest_y
+        largest_y
+        smallest_x
+        largest_x
+    )
+}
+
+fn print_grid_with_bounding(grid: [[u8]], box: BoundingBox) {
+    for y in (box.smallest_y..box.largest_y).inclusive() {
+        for x in (box.smallest_x..box.largest_x).inclusive() {
+            print("{}", grid[y][x] as! c_char)
+        }
+        println("")
+    }
+}
+
+fn extend_grid(grid: &[[u8]]) throws -> [[u8]] {
+    let height = grid.size()
+    let width = grid[0].size()
+
+    let new_height = height * 3
+    let new_width = width * 3
+
+    mut new_grid: [[u8]] = []
+    for y in ..new_height {
+        mut new_row: [u8] = [46;new_width]
+        if y >= height and y < height * 2 {
+            for x in ..new_width {
+                if x >= width and x < width * 2 {
+                    new_row[x] = grid[y-height][x-width]
+                }
+            }
+        }
+        new_grid.push(new_row)
+    }
+
+    return new_grid
+}
