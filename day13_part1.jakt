@@ -106,7 +106,7 @@ fn parse_packet(mut packet: String) throws -> (String, PacketOrValue) {
             if current_value.length() > 0 {
                 values.packet.push(PacketOrValue(
                     packet: []
-                    value: current_value.to_string().to_int()!
+                    value: current_value.to_string().to_number<i32>()!
                 ))
 
                 current_value.clear()

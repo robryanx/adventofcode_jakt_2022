@@ -29,8 +29,8 @@ fn build_assignments(assignments_str: [String]) throws -> [Assignment] {
     for assignment in assignments_str {
         let assignment_parts = assignment.split(c'-')
         assignment_list.push(Assignment(
-            start: assignment_parts[0].to_int()!
-            end: assignment_parts[1].to_int()!
+            start: assignment_parts[0].to_number<i32>()!
+            end: assignment_parts[1].to_number<i32>()!
         ))
     }
 

@@ -18,7 +18,7 @@ fn main() {
             total += register_cycle(cycle, x_register)
             cycle++
             total += register_cycle(cycle, x_register)
-            x_register += instruction_parts[1].to_int()!
+            x_register += instruction_parts[1].to_number<i32>()!
         }
     }
 

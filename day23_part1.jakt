@@ -13,7 +13,7 @@ enum Direction {
 
 fn main() {
     mut grid: [[u8]] = []
-    for line in reader::lines_string(day: 23, examples: false) { 
+    for line in reader::lines_string(day: 23, examples: false) {
         grid.push(string_to_char_array(line))
     }
 

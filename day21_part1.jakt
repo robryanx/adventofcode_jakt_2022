@@ -35,7 +35,7 @@ fn main() {
         let var_result = line_parts[0].substring(start: 0, length: line_parts[0].length()-1)
 
         if line_parts.size() == 2 {
-            values[var_result] = line_parts[1].to_int()! as! i64
+            values[var_result] = line_parts[1].to_number<i64>()!
         } else {
             let op = match line_parts[2].byte_at(0) {
                 b'+' => Operator::Plus

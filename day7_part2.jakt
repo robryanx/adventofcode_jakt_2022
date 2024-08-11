@@ -64,7 +64,7 @@ fn main() {
             } else {
                 let new_file = FileContainer(
                     name: listing_parts[1]
-                    size: listing_parts[0].to_int()!
+                    size: listing_parts[0].to_number<i32>()!
                 )
 
                 current_directory!.files.push(new_file)

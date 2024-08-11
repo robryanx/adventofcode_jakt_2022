@@ -28,7 +28,7 @@ fn main() {
     for line in reader::lines_string(day: 9) {
         let instuction_parts = line.split(c' ')
 
-        for i in 0..instuction_parts[1].to_uint()! {
+        for i in 0..(instuction_parts[1].to_number<u32>())! {
             match instuction_parts[0] {
                 "R" => knots[0].x++ 
                 "L" => knots[0].x--

@@ -7,8 +7,7 @@ fn lines_int(day: i64, examples: bool = false, separator: c_char = c'\n') throws
     let lines_string = read_input(day, examples).split(separator)
     
     for line in lines_string.iterator() {
-        let number = line.to_int()
-
+        let number = line.to_number<i32>()
         if number.has_value() {
             lines_int.push(number!)
         }

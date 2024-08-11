@@ -121,7 +121,7 @@ fn parse_monkey(lines: [String]) throws -> Monkey {
                 let line_ = line.replace(replace: "  Starting items: ", with: "")
                 let parts = line_.split(c',')
                 for item in parts {
-                    items.push(item.to_uint()! as! usize)
+                    items.push(item.to_number<usize>()!)
                 }
             }
             2 => {

@@ -17,8 +17,8 @@ fn main() {
             let coordinate_parts = coordinate.split(c',')
 
             line_sections.push(Position(
-                x: coordinate_parts[0].to_uint()!
-                y: coordinate_parts[1].to_uint()!
+                x: coordinate_parts[0].to_number<u32>()!
+                y: coordinate_parts[1].to_number<u32>()!
             ))            
         }
 

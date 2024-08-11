@@ -22,7 +22,7 @@ fn main() {
             draw(&mut image, cycle, x_register)
             cycle++
             
-            x_register += instruction_parts[1].to_int()!
+            x_register += instruction_parts[1].to_number<i32>()!
         }
     }
 

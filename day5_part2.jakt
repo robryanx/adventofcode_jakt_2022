@@ -69,7 +69,11 @@ fn main() {
 fn parse_move_instruction(line: String) throws -> [i32] {
     let instruction_parts = line.split(c' ')
 
-    return [instruction_parts[1].to_int()!, instruction_parts[3].to_int()!, instruction_parts[5].to_int()!]
+    return [
+        instruction_parts[1].to_number<i32>()!,
+        instruction_parts[3].to_number<i32>()!,
+        instruction_parts[5].to_number<i32>()!
+    ]
 }
 
 fn print_result(stacks: [[u8]]) {
